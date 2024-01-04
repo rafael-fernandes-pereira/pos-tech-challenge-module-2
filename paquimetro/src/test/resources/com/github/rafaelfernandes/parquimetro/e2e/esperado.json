@@ -1,0 +1,23 @@
+{
+  "id": "7ffb4be7-985c-483e-ac17-bf899a172b4e",
+  "nome": "Luisa Antero",
+  "documento": 12345678,
+  "endereco": {
+    "logradouro": "Rua projetada 3",
+    "numero": 123,
+    "observacao": "Muro Azul",
+    "bairro": "Anhumas",
+    "cidade": "São Paulo",
+    "estado": "MG"
+  },
+  "forma_pagamento": "CARTAO_CREDITO",
+  "contato": {
+    "email": "luisa.pereira@fiap.com.br",
+    "telefone": "11999887766"
+  },
+  "carros": [
+    "IUW8E56",
+    "JEZ8A17",
+    "YIT8U05"
+  ]
+}
