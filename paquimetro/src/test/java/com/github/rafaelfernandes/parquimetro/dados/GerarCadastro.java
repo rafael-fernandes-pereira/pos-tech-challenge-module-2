@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.dados;
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.Endereco;
-import com.github.rafaelfernandes.parquimetro.controller.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 import net.datafaker.Faker;
 
 import java.util.List;

@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.e2e;
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.Endereco;
-import com.github.rafaelfernandes.parquimetro.controller.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;

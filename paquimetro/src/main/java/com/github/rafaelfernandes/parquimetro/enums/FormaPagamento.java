@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.controller;
+package com.github.rafaelfernandes.parquimetro.enums;
 
 public enum FormaPagamento {
 

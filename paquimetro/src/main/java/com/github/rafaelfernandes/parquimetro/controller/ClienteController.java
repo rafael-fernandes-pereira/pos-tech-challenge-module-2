@@ -1,5 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
+import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +47,20 @@ public class ClienteController {
 
     @PostMapping("/")
     private ResponseEntity<Void> cadastrarNovoCliente(@RequestBody Cliente cliente){
-        return null;
+
+        Cliente novoCliente = new Cliente(null,
+                cliente.nome(),
+                cliente.documento(),
+                cliente.endereco(),
+                cliente.forma_pagamento(),
+                cliente.contato(),
+                cliente.carros());
+
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+
     }
 
 }

@@ -1,18 +1,18 @@
-package com.github.rafaelfernandes.parquimetro.controller;
+package com.github.rafaelfernandes.parquimetro.entity;
 
 import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 
 import java.util.List;
 import java.util.UUID;
 
-public record Cliente(
+public record ClienteEntity(
 
         UUID id,
         String nome,
         Long documento,
-        Endereco endereco,
+        EnderecoEntity endereco,
         FormaPagamento forma_pagamento,
-        Contato contato,
+        ContatoEntity contato,
         List<String> carros
 ) {
 }
