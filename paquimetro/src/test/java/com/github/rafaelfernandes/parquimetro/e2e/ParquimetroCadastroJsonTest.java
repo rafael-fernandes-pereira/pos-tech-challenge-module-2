@@ -22,7 +22,7 @@ public class ParquimetroCadastroJsonTest {
     @Autowired
     private JacksonTester<Cliente> json;
 
-    private Cliente cliente = new Cliente(
+    private final Cliente cliente = new Cliente(
             UUID.fromString("7ffb4be7-985c-483e-ac17-bf899a172b4e"),
             "Luisa Antero",
             12345678L,

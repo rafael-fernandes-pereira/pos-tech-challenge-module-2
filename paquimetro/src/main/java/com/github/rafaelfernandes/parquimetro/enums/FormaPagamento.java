@@ -1,5 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum FormaPagamento {
 
     PIX ("Pix"),
@@ -13,7 +16,4 @@ public enum FormaPagamento {
         this.descricao = descricao;
     }
 
-    public String getDescricao() {
-        return descricao;
-    }
 }

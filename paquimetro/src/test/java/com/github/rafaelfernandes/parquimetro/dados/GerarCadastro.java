@@ -13,9 +13,9 @@ import java.util.UUID;
 
 public class GerarCadastro {
 
-    private static Faker faker = new Faker(new Locale("pt", "BR"));
+    private static final Faker faker = new Faker(new Locale("pt", "BR"));
 
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
     public static Cliente cliente(Boolean novo){
 
