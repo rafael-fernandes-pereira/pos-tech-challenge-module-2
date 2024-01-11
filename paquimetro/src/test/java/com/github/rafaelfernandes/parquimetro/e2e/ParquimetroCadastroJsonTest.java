@@ -83,10 +83,10 @@ public class ParquimetroCadastroJsonTest {
                 .isEqualTo(123);
 
 
-        assertThat(dadosCadastro).hasJsonPathValue("@.endereco.observacao");
+        assertThat(dadosCadastro).hasJsonPathValue("@.endereco.complemento");
 
         assertThat(dadosCadastro)
-                .extractingJsonPathValue("@.endereco.observacao")
+                .extractingJsonPathValue("@.endereco.complemento")
                 .isEqualTo("Muro Azul");
 
 
@@ -145,7 +145,7 @@ public class ParquimetroCadastroJsonTest {
                   "endereco": {
                     "logradouro": "Rua projetada 3",
                     "numero": 123,
-                    "observacao": "Muro Azul",
+                    "complemento": "Muro Azul",
                     "bairro": "Anhumas",
                     "cidade": "São Paulo",
                     "estado": "MG"
@@ -178,7 +178,7 @@ public class ParquimetroCadastroJsonTest {
 
         assertThat(clienteConfirmado.endereco().numero()).isEqualTo(123);
 
-        assertThat(clienteConfirmado.endereco().observacao()).isEqualTo("Muro Azul");
+        assertThat(clienteConfirmado.endereco().complemento()).isEqualTo("Muro Azul");
 
         assertThat(clienteConfirmado.endereco().bairro()).isEqualTo("Anhumas");
 

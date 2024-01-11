@@ -11,6 +11,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class ParquimetroCadastroControllerTest {
         int numero = documentContext.read("$.endereco.numero");
         assertEquals(123, numero);
 
-        String observacao = documentContext.read("$.endereco.observacao");
+        String observacao = documentContext.read("$.endereco.complemento");
         assertEquals("Muro Azul", observacao);
 
         String bairro = documentContext.read("$.endereco.bairro");
@@ -115,6 +116,17 @@ public class ParquimetroCadastroControllerTest {
                 );
 
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        URI location = createResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        location,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
 
     }
 

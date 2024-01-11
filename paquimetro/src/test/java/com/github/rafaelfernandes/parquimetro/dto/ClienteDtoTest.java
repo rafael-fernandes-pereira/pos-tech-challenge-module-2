@@ -18,8 +18,19 @@ public class ClienteDtoTest {
 
         assertThat(cliente.nome()).isEqualTo(entity.nome());
         assertThat(cliente.documento()).isEqualTo(entity.documento());
+
         assertThat(cliente.endereco().logradouro()).isEqualTo(entity.endereco().logradouro());
         assertThat(cliente.endereco().numero()).isEqualTo(entity.endereco().numero());
+        assertThat(cliente.endereco().complemento()).isEqualTo(entity.endereco().complemento());
+        assertThat(cliente.endereco().bairro()).isEqualTo(entity.endereco().bairro());
+        assertThat(cliente.endereco().cidade()).isEqualTo(entity.endereco().cidade());
+        assertThat(cliente.endereco().estado()).isEqualTo(entity.endereco().estado());
+
+        assertThat(cliente.forma_pagamento()).isEqualTo(entity.forma_pagamento());
+
+        assertThat(cliente.carros()).isEqualTo(entity.carros());
+
+
 
 
 

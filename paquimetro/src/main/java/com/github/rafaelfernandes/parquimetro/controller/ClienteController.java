@@ -1,64 +1,61 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
-import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
+import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
+import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/clientes")
 public class ClienteController {
 
-    private Cliente clienteTest = new Cliente(
-            UUID.fromString("7ffb4be7-985c-483e-ac17-bf899a172b4e"),
-            "Luisa Antero",
-            12345678L,
-            new Endereco(
-                    "Rua projetada 3",
-                    123,
-                    "Muro Azul",
-                    "Anhumas",
-                    "São Paulo",
-                    "MG"
-            ),
-            FormaPagamento.CARTAO_CREDITO,
-            new Contato(
-                    "luisa.pereira@fiap.com.br",
-                    "11999887766"
-            ),
-            List.of("IUW8E56", "JEZ8A17", "YIT8U05")
-    );
-
+    @Autowired private ClienteRepository repository;
 
     @GetMapping("/{requestId}")
     private ResponseEntity<Cliente> findById(@PathVariable UUID requestId){
 
-        if (requestId.equals(this.clienteTest.id()))
+        Optional<ClienteEntity> clienteEntity = repository.findById(requestId);
+
+        if (clienteEntity.isPresent()){
+            Cliente cliente = ClienteDto.from(clienteEntity.get());
+
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(this.clienteTest);
+                    .body(cliente);
 
-        return ResponseEntity.notFound().build();
+        }
 
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .build()
+        ;
     }
 
     @PostMapping("/")
-    private ResponseEntity<Void> cadastrarNovoCliente(@RequestBody Cliente cliente){
+    private ResponseEntity<Void> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
 
-        Cliente novoCliente = new Cliente(null,
-                cliente.nome(),
-                cliente.documento(),
-                cliente.endereco(),
-                cliente.forma_pagamento(),
-                cliente.contato(),
-                cliente.carros());
+        ClienteEntity clienteASalvar = ClienteDto.from(cliente, Boolean.TRUE);
 
+        ClienteEntity clienteSalvo = repository.save(clienteASalvar);
+
+        URI location = uriComponentsBuilder
+                .path("clientes/{id}")
+                .buildAndExpand(clienteSalvo.id())
+                .toUri();
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .header(HttpHeaders.LOCATION, location.toASCIIString())
                 .build();
 
     }
