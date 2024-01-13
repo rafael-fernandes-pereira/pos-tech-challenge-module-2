@@ -3,6 +3,7 @@ package com.github.rafaelfernandes.parquimetro.unit;
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.Endereco;
+import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -134,8 +135,16 @@ public class ValidationTest {
 
         ;
 
+    }
 
 
+    @Test
+    void deveRetornarSucesso(){
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+
+        List<String> erros = this.validacaoRequest.execute(cliente);
+
+        assertThat(erros).isEmpty();
 
     }
 

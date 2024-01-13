@@ -39,7 +39,7 @@ public class GerarCadastro {
                 formaPagamento,
                 new Contato(
                         faker.internet().emailAddress(),
-                        faker.phoneNumber().cellPhone()
+                        faker.phoneNumber().cellPhone().replaceAll("[(),\\-, ]", "")
                 ),
                 placas()
         );

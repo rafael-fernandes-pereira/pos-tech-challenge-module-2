@@ -10,7 +10,7 @@ public record Contato(
         @Email(message = "O campo contato.email deve ser um email válido")
         String email,
         @NotEmpty(message = "O campo contato.celular deve estar preenchido")
-        @Pattern(regexp = "\\(\\d{2}\\)\\s?9[1-9]\\d{3}-\\d{4}", message = "O campo contato.celular está com formatação inválida")
+        @Pattern(regexp = "\\d{2}?9[1-9]\\d{3}\\d{4}", message = "O campo contato.celular está com formatação inválida")
         String celular
 ) {
 }
