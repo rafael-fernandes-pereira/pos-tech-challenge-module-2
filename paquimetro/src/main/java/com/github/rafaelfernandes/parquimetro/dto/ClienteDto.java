@@ -24,7 +24,7 @@ public class ClienteDto {
 
         ContatoEntity contatoEntity = new ContatoEntity(
                 cliente.contato().email(),
-                cliente.contato().telefone()
+                cliente.contato().celular()
         );
 
 

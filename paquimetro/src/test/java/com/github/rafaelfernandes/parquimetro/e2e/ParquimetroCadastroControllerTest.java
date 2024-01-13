@@ -1,35 +1,67 @@
 package com.github.rafaelfernandes.parquimetro.e2e;
 
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.response.Message;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
+import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
+import com.github.rafaelfernandes.parquimetro.enums.Estados;
+import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
 public class ParquimetroCadastroControllerTest {
+
+    @Container //
+    private static MongoDBContainer mongoDBContainer = MongoContainers.getDefaultContainer();
+
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+    }
 
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private ClienteRepository repository;
+
     @Test
+    @DirtiesContext
     void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+
+        String requestId = clienteSalvo.id().toString();
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/7ffb4be7-985c-483e-ac17-bf899a172b4e",
+                        "/clientes/"+ requestId,
                         String.class
                 );
 
@@ -37,44 +69,44 @@ public class ParquimetroCadastroControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        String id = documentContext.read("$.id");
-        assertEquals("7ffb4be7-985c-483e-ac17-bf899a172b4e", id);
+        String id = documentContext.read("$.cliente.id");
+        assertEquals(clienteSalvo.id().toString(), id);
 
-        String nome = documentContext.read("$.nome");
-        assertEquals("Luisa Antero", nome);
+        String nome = documentContext.read("$.cliente.nome");
+        assertEquals(clienteSalvo.nome(), nome);
 
-        int documento = documentContext.read("$.documento");
-        assertEquals(12345678, documento);
+        Long documento = documentContext.read("$.cliente.documento");
+        assertEquals(clienteSalvo.documento(), documento);
 
-        String logradouro = documentContext.read("$.endereco.logradouro");
-        assertEquals("Rua projetada 3", logradouro);
+        String logradouro = documentContext.read("$.cliente.endereco.logradouro");
+        assertEquals(clienteSalvo.endereco().logradouro(), logradouro);
 
-        int numero = documentContext.read("$.endereco.numero");
-        assertEquals(123, numero);
+        Integer numero = documentContext.read("$.cliente.endereco.numero");
+        assertEquals(clienteSalvo.endereco().numero(), numero);
 
-        String observacao = documentContext.read("$.endereco.complemento");
-        assertEquals("Muro Azul", observacao);
+        String complemento = documentContext.read("$.cliente.endereco.complemento");
+        assertEquals(clienteSalvo.endereco().complemento(), complemento);
 
-        String bairro = documentContext.read("$.endereco.bairro");
-        assertEquals("Anhumas", bairro);
+        String bairro = documentContext.read("$.cliente.endereco.bairro");
+        assertEquals(clienteSalvo.endereco().bairro(), bairro);
 
-        String cidade = documentContext.read("$.endereco.cidade");
-        assertEquals("São Paulo", cidade);
+        String cidade = documentContext.read("$.cliente.endereco.cidade");
+        assertEquals(clienteSalvo.endereco().cidade(), cidade);
 
-        String estado = documentContext.read("$.endereco.estado");
-        assertEquals("MG", estado);
+        Estados estado = Estados.valueOf(documentContext.read("$.cliente.endereco.estado"));
+        assertEquals(clienteSalvo.endereco().estado(), estado);
 
-        String formaPagamento = documentContext.read("$.forma_pagamento");
-        assertEquals("CARTAO_CREDITO", formaPagamento);
+        String formaPagamento = documentContext.read("$.cliente.forma_pagamento");
+        assertEquals(clienteSalvo.forma_pagamento().toString(), formaPagamento);
 
-        String email = documentContext.read("$.contato.email");
-        assertEquals("luisa.pereira@fiap.com.br", email);
+        String email = documentContext.read("$.cliente.contato.email");
+        assertEquals(clienteSalvo.contato().email(), email);
 
-        String telefone = documentContext.read("$.contato.telefone");
-        assertEquals("11999887766", telefone);
+        String telefone = documentContext.read("$.cliente.contato.celular");
+        assertEquals(clienteSalvo.contato().telefone(), telefone);
 
-        List<String> carros = documentContext.read("$.carros");
-        assertEquals(Arrays.asList("IUW8E56", "JEZ8A17", "YIT8U05"), carros);
+        List<String> carros = documentContext.read("$.cliente.carros");
+        assertEquals(clienteSalvo.carros(), carros);
 
     }
 
@@ -104,6 +136,7 @@ public class ParquimetroCadastroControllerTest {
     }
 
     @Test
+    @DirtiesContext
     void deveCadastrarUmNovoCliente(){
 
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
@@ -126,14 +159,23 @@ public class ParquimetroCadastroControllerTest {
                 );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-
     }
 
+    @Test
+    void deveRetornarBadRequestAoCadastrarUmNovoCliente(){
 
+        Cliente cliente = new Cliente(null, null, null, null, null, null, null);
 
+        ResponseEntity<Message> createResponse = this.restTemplate
+                .postForEntity(
+                        "/clientes/",
+                        cliente,
+                        Message.class
+                );
 
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
+    }
 
 
 }

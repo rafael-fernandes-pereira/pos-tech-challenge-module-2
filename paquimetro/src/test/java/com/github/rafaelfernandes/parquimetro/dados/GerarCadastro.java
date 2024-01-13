@@ -3,6 +3,7 @@ package com.github.rafaelfernandes.parquimetro.dados;
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.Endereco;
+import com.github.rafaelfernandes.parquimetro.enums.Estados;
 import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 import net.datafaker.Faker;
 
@@ -29,11 +30,11 @@ public class GerarCadastro {
                 Long.valueOf(faker.cpf().valid(false)),
                 new Endereco(
                         faker.address().streetAddress(),
-                        Long.valueOf(faker.address().streetAddressNumber()),
+                        Integer.valueOf(faker.address().streetAddressNumber()),
                         faker.address().secondaryAddress(),
                         faker.address().secondaryAddress(),
                         faker.address().city(),
-                        faker.address().stateAbbr()
+                        Estados.valueOf(faker.address().stateAbbr())
                 ),
                 formaPagamento,
                 new Contato(

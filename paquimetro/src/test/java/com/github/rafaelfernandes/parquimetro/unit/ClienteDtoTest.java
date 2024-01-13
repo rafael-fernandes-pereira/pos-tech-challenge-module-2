@@ -1,7 +1,8 @@
-package com.github.rafaelfernandes.parquimetro.dto;
+package com.github.rafaelfernandes.parquimetro.unit;
 
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import org.junit.jupiter.api.Test;
 

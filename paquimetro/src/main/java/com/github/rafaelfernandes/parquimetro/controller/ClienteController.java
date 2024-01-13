@@ -1,8 +1,10 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
+import com.github.rafaelfernandes.parquimetro.controller.response.Message;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,17 +23,21 @@ public class ClienteController {
 
     @Autowired private ClienteRepository repository;
 
+    @Autowired private ValidacaoRequest validacaoRequest;
+
     @GetMapping("/{requestId}")
-    private ResponseEntity<Cliente> findById(@PathVariable UUID requestId){
+    private ResponseEntity<Message> findById(@PathVariable UUID requestId){
 
         Optional<ClienteEntity> clienteEntity = repository.findById(requestId);
 
         if (clienteEntity.isPresent()){
             Cliente cliente = ClienteDto.from(clienteEntity.get());
 
+            Message message = new Message(cliente, Boolean.FALSE, null);
+
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(cliente);
+                    .body(message);
 
         }
 
@@ -42,11 +48,24 @@ public class ClienteController {
     }
 
     @PostMapping("/")
-    private ResponseEntity<Void> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
+    private ResponseEntity<Message> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
+
+        List<String> erros = validacaoRequest.execute(cliente);
+
+        if (!erros.isEmpty()){
+            Message message = new Message(null, Boolean.TRUE, erros);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(message);
+        }
 
         ClienteEntity clienteASalvar = ClienteDto.from(cliente, Boolean.TRUE);
 
         ClienteEntity clienteSalvo = repository.save(clienteASalvar);
+
+        Cliente clienteResponse = ClienteDto.from(clienteSalvo);
+
+        Message message = new Message(clienteResponse, Boolean.FALSE, null);
 
         URI location = uriComponentsBuilder
                 .path("clientes/{id}")
@@ -56,7 +75,7 @@ public class ClienteController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .build();
+                .body(message);
 
     }
 
