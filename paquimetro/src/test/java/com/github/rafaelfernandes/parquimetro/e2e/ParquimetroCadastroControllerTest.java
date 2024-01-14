@@ -40,6 +40,7 @@ public class ParquimetroCadastroControllerTest {
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.data.mongodb.auto-index-creation", MongoContainers::getTrue);
     }
 
     @Autowired
@@ -174,6 +175,34 @@ public class ParquimetroCadastroControllerTest {
                 );
 
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    }
+
+    @Test
+    @DirtiesContext
+    void deveRetornarDuplicateRecordAoCadastrarUmNovoCliente(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+
+        ResponseEntity<Void> createResponse = this.restTemplate
+                .postForEntity(
+                        "/clientes/",
+                        cliente,
+                        Void.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        ResponseEntity<Void> createResponseDuplicate = this.restTemplate
+                .postForEntity(
+                        "/clientes/",
+                        cliente,
+                        Void.class
+                );
+
+        assertThat(createResponseDuplicate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+
+
 
     }
 

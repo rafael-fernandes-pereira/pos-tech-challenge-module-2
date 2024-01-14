@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class ParquimetroCadastroJsonTest {
                 List.of("IUW8E56", "JEZ8A17", "YIT8U05")
             ),
             Boolean.FALSE,
+            HttpStatus.OK.value(),
             List.of()
     );
 
@@ -169,6 +171,7 @@ public class ParquimetroCadastroJsonTest {
                      ]
                    },
                    "isError": false,
+                   "httpStatusCode": "200",
                    "errors": []
                  }
                 """;

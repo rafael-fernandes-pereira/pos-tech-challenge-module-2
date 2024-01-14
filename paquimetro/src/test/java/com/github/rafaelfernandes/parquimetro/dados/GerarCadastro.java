@@ -45,6 +45,8 @@ public class GerarCadastro {
         );
     }
 
+
+
     public static List<String> placas(){
 
         return faker.collection(

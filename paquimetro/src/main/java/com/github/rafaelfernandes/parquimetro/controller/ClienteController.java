@@ -4,6 +4,7 @@ import com.github.rafaelfernandes.parquimetro.controller.response.Message;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.service.ClienteService;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,8 @@ public class ClienteController {
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
+    @Autowired private ClienteService service;
+
     @GetMapping("/{requestId}")
     private ResponseEntity<Message> findById(@PathVariable UUID requestId){
 
@@ -33,7 +36,7 @@ public class ClienteController {
         if (clienteEntity.isPresent()){
             Cliente cliente = ClienteDto.from(clienteEntity.get());
 
-            Message message = new Message(cliente, Boolean.FALSE, null);
+            Message message = new Message(cliente, Boolean.FALSE, HttpStatus.OK.value(), null);
 
             return ResponseEntity
                     .status(HttpStatus.OK)
@@ -50,30 +53,22 @@ public class ClienteController {
     @PostMapping("/")
     private ResponseEntity<Message> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
 
-        List<String> erros = validacaoRequest.execute(cliente);
+        Message message = this.service.registro(cliente);
 
-        if (!erros.isEmpty()){
-            Message message = new Message(null, Boolean.TRUE, erros);
+        if (message.isError()){
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(message.httpStatusCode())
                     .body(message);
         }
 
-        ClienteEntity clienteASalvar = ClienteDto.from(cliente, Boolean.TRUE);
-
-        ClienteEntity clienteSalvo = repository.save(clienteASalvar);
-
-        Cliente clienteResponse = ClienteDto.from(clienteSalvo);
-
-        Message message = new Message(clienteResponse, Boolean.FALSE, null);
 
         URI location = uriComponentsBuilder
                 .path("clientes/{id}")
-                .buildAndExpand(clienteSalvo.id())
+                .buildAndExpand(message.cliente().id())
                 .toUri();
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(message.httpStatusCode())
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
                 .body(message);
 

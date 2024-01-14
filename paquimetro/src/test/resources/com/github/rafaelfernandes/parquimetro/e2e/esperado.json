@@ -23,5 +23,6 @@
     ]
   },
   "isError": false,
+  "httpStatusCode": 200,
   "errors": []
 }

@@ -1,7 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.entity;
 
 import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
-import lombok.Data;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -12,6 +12,7 @@ public record ClienteEntity(
 
         UUID id,
         String nome,
+        @Indexed(unique = true)
         Long documento,
         EnderecoEntity endereco,
         FormaPagamento forma_pagamento,
