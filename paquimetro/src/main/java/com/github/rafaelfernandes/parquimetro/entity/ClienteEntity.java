@@ -16,7 +16,6 @@ public record ClienteEntity(
         Long documento,
         EnderecoEntity endereco,
         FormaPagamento forma_pagamento,
-        ContatoEntity contato,
-        List<String> carros
+        ContatoEntity contato
 ) {
 }

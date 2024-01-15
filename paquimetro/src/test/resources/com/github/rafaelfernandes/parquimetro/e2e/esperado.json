@@ -15,12 +15,7 @@
     "contato": {
       "email": "luisa.pereira@fiap.com.br",
       "celular": "11999887766"
-    },
-    "carros": [
-      "IUW8E56",
-      "JEZ8A17",
-      "YIT8U05"
-    ]
+    }
   },
   "isError": false,
   "httpStatusCode": 200,

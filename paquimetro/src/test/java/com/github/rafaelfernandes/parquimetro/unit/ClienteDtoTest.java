@@ -29,8 +29,6 @@ public class ClienteDtoTest {
 
         assertThat(cliente.forma_pagamento()).isEqualTo(entity.forma_pagamento());
 
-        assertThat(cliente.carros()).isEqualTo(entity.carros());
-
 
 
 

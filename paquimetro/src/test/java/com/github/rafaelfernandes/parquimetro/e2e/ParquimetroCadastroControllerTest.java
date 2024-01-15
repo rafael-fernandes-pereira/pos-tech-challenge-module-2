@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -34,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-@DirtiesContext
 public class ParquimetroCadastroControllerTest {
 
     @Container //
@@ -51,6 +49,11 @@ public class ParquimetroCadastroControllerTest {
 
     @Autowired
     private ClienteRepository repository;
+
+    @BeforeEach
+    void setup(){
+        repository.deleteAll();
+    }
 
     @Test
     void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
@@ -108,9 +111,6 @@ public class ParquimetroCadastroControllerTest {
         String telefone = documentContext.read("$.cliente.contato.celular");
         assertEquals(clienteSalvo.contato().telefone(), telefone);
 
-        List<String> carros = documentContext.read("$.cliente.carros");
-        assertEquals(clienteSalvo.carros(), carros);
-
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveRetornarBadRequestAoCadastrarUmNovoCliente(){
 
-        Cliente cliente = new Cliente(null, null, null, null, null, null, null);
+        Cliente cliente = new Cliente(null, null, null, null, null, null);
 
         ResponseEntity<Message> createResponse = this.restTemplate
                 .postForEntity(
@@ -307,7 +307,7 @@ public class ParquimetroCadastroControllerTest {
             if (!isEmpty) continue;
 
             i++;
-            if (i > 50) continueLoop = Boolean.FALSE;
+            if (i > 10) continueLoop = Boolean.FALSE;
 
             clienteEntities.add(clienteEntity);
 

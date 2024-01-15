@@ -34,8 +34,7 @@ public class ClienteDto {
                 cliente.documento(),
                 enderecoEntity,
                 cliente.forma_pagamento(),
-                contatoEntity,
-                cliente.carros()
+                contatoEntity
         );
     }
 
@@ -63,8 +62,7 @@ public class ClienteDto {
                 cliente.documento(),
                 endereco,
                 cliente.forma_pagamento(),
-                contato,
-                cliente.carros()
+                contato
         );
     }
 

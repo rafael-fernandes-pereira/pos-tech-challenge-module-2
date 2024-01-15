@@ -40,21 +40,10 @@ public class GerarCadastro {
                 new Contato(
                         faker.internet().emailAddress(),
                         faker.phoneNumber().cellPhone().replaceAll("[(),\\-, ]", "")
-                ),
-                placas()
+                )
         );
     }
 
-
-
-    public static List<String> placas(){
-
-        return faker.collection(
-                        GerarCadastro::placa)
-                .len(1, 5)
-                .generate();
-
-    }
 
     private static String placa(){
         return new StringBuilder()
