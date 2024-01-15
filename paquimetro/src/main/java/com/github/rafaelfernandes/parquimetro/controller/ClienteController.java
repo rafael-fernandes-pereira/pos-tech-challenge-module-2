@@ -1,5 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
@@ -80,7 +81,6 @@ public class ClienteController {
         return ResponseEntity
                 .status(updated ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
                 .build();
-
     }
 
     @DeleteMapping("/{requestId}")
@@ -107,11 +107,23 @@ public class ClienteController {
     @GetMapping("/{requestId}/carros")
     ResponseEntity<MessageCarros> obterCarros(@PathVariable UUID requestId){
 
-        MessageCarros messageCarros = this.carroService.obterCarros(requestId);
+        MessageCarros messageCarros = this.carroService.obter(requestId);
 
         return ResponseEntity
                 .status(messageCarros.httpStatusCode())
                 .body(messageCarros);
     }
+
+    @DeleteMapping("/{requestId}/{carro}")
+    ResponseEntity<MessageCarros> excluirCarros(@PathVariable UUID requestId, @PathVariable String carro){
+
+        MessageCarros messageCarros = this.carroService.deletar(requestId, carro);
+
+        return ResponseEntity
+                .status(messageCarros.httpStatusCode())
+                .body(messageCarros);
+
+    }
+
 
 }

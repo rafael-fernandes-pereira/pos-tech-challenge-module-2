@@ -1,8 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.dto;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import com.github.rafaelfernandes.parquimetro.controller.Contato;
-import com.github.rafaelfernandes.parquimetro.controller.Endereco;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.request.Contato;
+import com.github.rafaelfernandes.parquimetro.controller.request.Endereco;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.entity.ContatoEntity;
 import com.github.rafaelfernandes.parquimetro.entity.EnderecoEntity;

@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.controller;
+package com.github.rafaelfernandes.parquimetro.controller.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

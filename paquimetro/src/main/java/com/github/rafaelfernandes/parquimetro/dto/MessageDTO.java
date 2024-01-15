@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.dto;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import org.springframework.http.HttpStatus;

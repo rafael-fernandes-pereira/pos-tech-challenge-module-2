@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.service;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.dto.MessageDTO;

@@ -1,7 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.controller.response;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 
 import java.util.List;
 

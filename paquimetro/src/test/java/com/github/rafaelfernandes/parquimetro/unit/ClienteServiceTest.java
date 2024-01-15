@@ -1,7 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.unit;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import com.github.rafaelfernandes.parquimetro.controller.Contato;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.request.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;

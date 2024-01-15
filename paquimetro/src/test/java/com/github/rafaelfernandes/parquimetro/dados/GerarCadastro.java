@@ -1,8 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.dados;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import com.github.rafaelfernandes.parquimetro.controller.Contato;
-import com.github.rafaelfernandes.parquimetro.controller.Endereco;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.request.Contato;
+import com.github.rafaelfernandes.parquimetro.controller.request.Endereco;
 import com.github.rafaelfernandes.parquimetro.enums.Estados;
 import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 import net.datafaker.Faker;

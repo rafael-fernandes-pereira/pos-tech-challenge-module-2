@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.controller;
+package com.github.rafaelfernandes.parquimetro.controller.request;
 
 import com.github.rafaelfernandes.parquimetro.enums.Estados;
 import jakarta.validation.constraints.Max;

@@ -1,7 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.service;
 
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCarros;
-import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
@@ -53,7 +52,7 @@ public class CarroService {
 
     }
 
-    public MessageCarros obterCarros(UUID requestId){
+    public MessageCarros obter(UUID requestId){
 
         Optional<ClienteEntity> cliente = this.repository.findById(requestId);
 
@@ -64,4 +63,37 @@ public class CarroService {
 
     }
 
+    public MessageCarros deletar(UUID requestId, String carro) {
+
+        Optional<ClienteEntity> cliente = this.repository.findById(requestId);
+
+        if (cliente.isEmpty()) {
+            return MessageDTO.carrosError(HttpStatus.NOT_FOUND, null);
+        }
+
+        List<String> carrosSalvos = cliente.get().carros();
+
+        if (!carrosSalvos.contains(carro)){
+            return MessageDTO.carrosError(HttpStatus.NOT_FOUND, null);
+        }
+
+        List<String> novosCarros = new ArrayList<>(carrosSalvos);
+        novosCarros.remove(carro);
+
+        ClienteEntity clienteEntity = new ClienteEntity(
+                requestId,
+                cliente.get().nome(),
+                cliente.get().documento(),
+                cliente.get().endereco(),
+                cliente.get().forma_pagamento(),
+                cliente.get().contato(),
+                novosCarros.stream().toList()
+        );
+
+        this.repository.save(clienteEntity);
+
+        return MessageDTO.carrosSuccess(HttpStatus.NO_CONTENT, null);
+
+
+    }
 }

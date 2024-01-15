@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.e2e;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
@@ -523,7 +523,7 @@ public class ParquimetroCadastroControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExiste(){
+    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarAtualizar(){
 
         Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
 
@@ -561,12 +561,103 @@ public class ParquimetroCadastroControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        String id = documentContext.read("$.clientes[0].id");
         List<String> carros =  documentContext.read("$.carros");
 
-        assertThat(id).isEqualTo(clienteSalvo.id().toString());
         assertTrue(CollectionUtils.isEqualCollection(carros, cliente.carros()));
 
     }
+
+    @Test
+    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarObter(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + cliente.id() + "/carros",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+    @Test
+    void deveDeletarCarro(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+
+        String carro = clienteSalvo.carros().get(0);
+
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange(
+                        "/clientes/" + clienteSalvo.id() + "/" + carro,
+                        HttpMethod.DELETE,
+                        null,
+                        Void.class
+                );
+
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + clienteSalvo.id() + "/carros" ,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> carros =  documentContext.read("$.carros");
+
+        assertFalse(carros.contains(carro));
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarExluir(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+
+        String carro = "AABBCCD";
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + clienteSalvo.id() + "/" + carro,
+                        HttpMethod.DELETE,
+                        null,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoCarroNaoExisteAoTentarExluir(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
+
+        String carro = GerarCadastro.placa();
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + cliente.id() + "/" + carro,
+                        HttpMethod.DELETE,
+                        null,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
 
 }
