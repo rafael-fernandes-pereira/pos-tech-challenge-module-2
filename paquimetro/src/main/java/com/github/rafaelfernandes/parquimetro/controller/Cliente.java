@@ -23,6 +23,9 @@ public record Cliente(
         @NotNull(message = "O campo forma_pagamento deve estar preenchido")
         FormaPagamento forma_pagamento,
         @NotNull(message = "O campo contato deve estar preenchido")
-        Contato contato
+        Contato contato,
+        @NotEmpty(message = "O campo carro deve ter pelo menos uma placa")
+        @Size(min = 1, message = "O campo carro deve ter pelo menos uma placa")
+        List<String> carros
 ) {
 }

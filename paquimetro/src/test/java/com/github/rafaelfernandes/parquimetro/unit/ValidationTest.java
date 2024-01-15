@@ -42,7 +42,7 @@ public class ValidationTest {
 
     @Test
     void deveRetornarErros(){
-        Cliente cliente = new Cliente(null, null, null,null,null,null);
+        Cliente cliente = new Cliente(null, null, null,null,null,null, null);
 
         List<String> erros = this.validacaoRequest.execute(cliente);
 
@@ -52,9 +52,10 @@ public class ValidationTest {
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo forma_pagamento deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo carro deve ter pelo menos uma placa"))
         ;
 
-        cliente = new Cliente(null, "Teste", null,null,null,null);
+        cliente = new Cliente(null, "Teste", null,null,null,null, null);
 
         erros = this.validacaoRequest.execute(cliente);
 
@@ -62,16 +63,17 @@ public class ValidationTest {
                 .anyMatch(erro -> erro.equals("O campo nome deve ter no mínimo de 20 e no máximo de 100 caracteres"))
         ;
 
-        cliente = new Cliente(null, "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste", null,null,null,null);
+        cliente = new Cliente(null, "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste", null,null,null,null, new ArrayList<String>());
 
         erros = this.validacaoRequest.execute(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equals("O campo nome deve ter no mínimo de 20 e no máximo de 100 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo carro deve ter pelo menos uma placa"))
         ;
 
         Endereco endereco = new Endereco(null, null, null, null, null, null);
-        cliente = new Cliente(null, null, null,endereco,null,null);
+        cliente = new Cliente(null, null, null,endereco,null,null, null);
 
         erros = this.validacaoRequest.execute(cliente);
 
@@ -95,7 +97,7 @@ public class ValidationTest {
                 null
         );
 
-        cliente = new Cliente(null, null, null,endereco,null,null);
+        cliente = new Cliente(null, null, null,endereco,null,null, null);
 
         erros = this.validacaoRequest.execute(cliente);
 
@@ -115,7 +117,7 @@ public class ValidationTest {
                 null
         );
 
-        cliente = new Cliente(null, null, null,endereco,null,null);
+        cliente = new Cliente(null, null, null,endereco,null,null, null);
 
         erros = this.validacaoRequest.execute(cliente);
 
@@ -128,7 +130,7 @@ public class ValidationTest {
 
         Contato contato = new Contato(null, null);
 
-        cliente = new Cliente(null, null, null,null,null,contato);
+        cliente = new Cliente(null, null, null,null,null,contato, null);
 
         erros = this.validacaoRequest.execute(cliente);
 
@@ -140,7 +142,7 @@ public class ValidationTest {
 
         contato = new Contato("teste", "bn78b2ty3784n6y7823");
 
-        cliente = new Cliente(null, null, null,null,null,contato);
+        cliente = new Cliente(null, null, null,null,null,contato, null);
 
         erros = this.validacaoRequest.execute(cliente);
 

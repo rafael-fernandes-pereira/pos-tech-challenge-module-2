@@ -44,8 +44,9 @@ public class ClienteServiceTest {
 
 
     @Test
-    @DirtiesContext
     void deveRetornarClienteDuplicado(){
+
+        this.repository.deleteAll();
 
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
 
@@ -70,7 +71,8 @@ public class ClienteServiceTest {
                 cpf,
                 cliente.endereco(),
                 cliente.forma_pagamento(),
-                cliente.contato()
+                cliente.contato(),
+                cliente.carros()
         );
 
         message = this.service.registro(clienteEmail);
@@ -88,7 +90,8 @@ public class ClienteServiceTest {
                 new Contato(
                         email,
                         faker.phoneNumber().cellPhone().replaceAll("[(),\\-, ]", "")
-                )
+                ),
+                cliente.carros()
         );
 
         message = this.service.registro(clienteEmail);

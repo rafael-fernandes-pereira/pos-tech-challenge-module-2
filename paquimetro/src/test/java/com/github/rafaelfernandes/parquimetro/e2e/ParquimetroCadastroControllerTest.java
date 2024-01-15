@@ -172,7 +172,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveRetornarBadRequestAoCadastrarUmNovoCliente(){
 
-        Cliente cliente = new Cliente(null, null, null, null, null, null);
+        Cliente cliente = new Cliente(null, null, null, null, null, null, null);
 
         ResponseEntity<Message> createResponse = this.restTemplate
                 .postForEntity(
@@ -354,7 +354,8 @@ public class ParquimetroCadastroControllerTest {
                 cliente.documento(),
                 cliente.endereco(),
                 cliente.forma_pagamento(),
-                cliente.contato()
+                cliente.contato(),
+                cliente.carros()
         );
 
         HttpEntity<Cliente> request = new HttpEntity<>(clienteUpdate);

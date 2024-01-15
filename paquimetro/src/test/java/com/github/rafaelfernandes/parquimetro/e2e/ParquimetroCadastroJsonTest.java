@@ -43,7 +43,8 @@ public class ParquimetroCadastroJsonTest {
                 new Contato(
                         "luisa.pereira@fiap.com.br",
                         "11999887766"
-                )
+                ),
+                List.of("IUW8E56", "JEZ8A17", "YIT8U05")
             ),
             Boolean.FALSE,
             HttpStatus.OK.value(),
@@ -132,6 +133,12 @@ public class ParquimetroCadastroJsonTest {
                 .extractingJsonPathValue("@.cliente.contato.celular")
                 .isEqualTo("11999887766");
 
+        assertThat(dadosCadastro).hasJsonPathArrayValue("@.cliente.carros");
+
+        assertThat(dadosCadastro)
+                .extractingJsonPathArrayValue("@.cliente.carros")
+                .isEqualTo(List.of("IUW8E56", "JEZ8A17", "YIT8U05"));
+
 
     }
 
@@ -200,6 +207,7 @@ public class ParquimetroCadastroJsonTest {
 
         assertThat(messageEsperado.cliente().contato().celular()).isEqualTo("11999887766");
 
+        assertThat(messageEsperado.cliente().carros()).isEqualTo(List.of("IUW8E56", "JEZ8A17", "YIT8U05"));
     }
 
 }
