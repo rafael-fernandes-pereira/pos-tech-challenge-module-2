@@ -93,7 +93,5 @@ public class CarroService {
         this.repository.save(clienteEntity);
 
         return MessageDTO.carrosSuccess(HttpStatus.NO_CONTENT, null);
-
-
     }
 }

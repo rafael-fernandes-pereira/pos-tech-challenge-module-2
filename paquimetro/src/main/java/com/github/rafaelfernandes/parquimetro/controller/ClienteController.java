@@ -3,9 +3,12 @@ package com.github.rafaelfernandes.parquimetro.controller;
 import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageFormaPagamento;
+import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.service.CarroService;
 import com.github.rafaelfernandes.parquimetro.service.ClienteService;
+import com.github.rafaelfernandes.parquimetro.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,8 @@ public class ClienteController {
 
     @Autowired private ClienteService clienteService;
     @Autowired private CarroService carroService;
+
+    @Autowired private FormaPagamentoService formaPagamentoService;
 
     @GetMapping("/{requestId}")
     private ResponseEntity<MessageCliente> findById(@PathVariable UUID requestId){
@@ -125,5 +130,27 @@ public class ClienteController {
 
     }
 
+    @PutMapping("/{requestId}/formaPagamento")
+    ResponseEntity<MessageFormaPagamento> alterarFormaPagamento(@PathVariable UUID requestId, @RequestBody String formaPagamento){
+
+        MessageFormaPagamento messageFormaPagamento = this.formaPagamentoService.alterar(requestId, formaPagamento);
+
+        return ResponseEntity
+                .status(messageFormaPagamento.httpStatusCode())
+                .body(messageFormaPagamento);
+
+
+    }
+
+    @GetMapping("/{requestId}/formaPagamento")
+    ResponseEntity<MessageFormaPagamento> obterFormaPagamento(@PathVariable UUID requestId){
+
+        MessageFormaPagamento messageFormaPagamento = this.formaPagamentoService.obter(requestId);
+
+        return ResponseEntity
+                .status(messageFormaPagamento.httpStatusCode())
+                .body(messageFormaPagamento);
+
+    }
 
 }

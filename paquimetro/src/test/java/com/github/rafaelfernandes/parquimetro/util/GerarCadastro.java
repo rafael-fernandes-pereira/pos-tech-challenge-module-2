@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.dados;
+package com.github.rafaelfernandes.parquimetro.util;
 
 import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.request.Contato;

@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.unit;
 import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.request.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.request.Endereco;
-import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.junit.jupiter.api.Test;

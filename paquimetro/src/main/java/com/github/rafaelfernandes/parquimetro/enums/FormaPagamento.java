@@ -12,8 +12,16 @@ public enum FormaPagamento {
     private final String descricao;
 
     FormaPagamento(String descricao){
-
         this.descricao = descricao;
+    }
+
+    public static FormaPagamento obterPorNome(String descricao) {
+        for (FormaPagamento formaPagamento : values()) {
+            if (formaPagamento.name().equalsIgnoreCase(descricao)) {
+                return formaPagamento;
+            }
+        }
+        return null;
     }
 
 }

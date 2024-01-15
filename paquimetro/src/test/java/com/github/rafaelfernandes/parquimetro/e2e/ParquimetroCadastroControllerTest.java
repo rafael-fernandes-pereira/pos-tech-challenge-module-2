@@ -2,7 +2,8 @@ package com.github.rafaelfernandes.parquimetro.e2e;
 
 import com.github.rafaelfernandes.parquimetro.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
-import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.enums.Estados;
@@ -13,6 +14,7 @@ import com.jayway.jsonpath.JsonPath;
 import net.datafaker.Faker;
 import net.minidev.json.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +60,18 @@ public class ParquimetroCadastroControllerTest {
         repository.deleteAll();
     }
 
-    @Test
-    void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
-
+    @NotNull
+    private ClienteEntity cadastrarNovoCliente() {
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
         ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
 
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        return repository.save(clienteEntity);
+    }
+
+    @Test
+    void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
+
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
         String requestId = clienteSalvo.id().toString();
 
@@ -341,10 +348,9 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveAlterarDados(){
 
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        Cliente cliente = ClienteDto.from(clienteSalvo);
 
         String nome = faker.name().fullName();
 
@@ -412,10 +418,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveDeletarCliente(){
 
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
-
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
         ResponseEntity<Void> deleteResponse = restTemplate
                 .exchange(
@@ -458,10 +461,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveAdicionarCarro(){
 
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
-
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
         String placa = GerarCadastro.placa();
 
@@ -482,7 +482,7 @@ public class ParquimetroCadastroControllerTest {
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         List<String> todosCarros = new ArrayList<>();
-        todosCarros.addAll(cliente.carros());
+        todosCarros.addAll(clienteSalvo.carros());
         todosCarros.addAll(carros);
 
         ResponseEntity<String> response = restTemplate
@@ -546,10 +546,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveRetornarCarros(){
 
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
-
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
@@ -563,7 +560,7 @@ public class ParquimetroCadastroControllerTest {
 
         List<String> carros =  documentContext.read("$.carros");
 
-        assertTrue(CollectionUtils.isEqualCollection(carros, cliente.carros()));
+        assertTrue(CollectionUtils.isEqualCollection(carros, clienteSalvo.carros()));
 
     }
 
@@ -585,10 +582,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveDeletarCarro(){
 
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
-
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
         String carro = clienteSalvo.carros().get(0);
 
@@ -621,10 +615,7 @@ public class ParquimetroCadastroControllerTest {
     @Test
     void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarExluir(){
 
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
-
-        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
 
         String carro = "AABBCCD";
 
@@ -639,6 +630,8 @@ public class ParquimetroCadastroControllerTest {
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
     }
+
+
 
     @Test
     void deveRetornarNotFoundQuandoCarroNaoExisteAoTentarExluir(){
@@ -659,5 +652,122 @@ public class ParquimetroCadastroControllerTest {
 
     }
 
+    @Test
+    void deveAlterarFormaDePagamento(){
+
+        ClienteEntity clienteEntity = cadastrarNovoCliente();
+
+        FormaPagamento[] formaPagamentos = FormaPagamento.values();
+
+        FormaPagamento novaFormaPagamento = null;
+
+        for (FormaPagamento formaPagamento : formaPagamentos){
+
+            if (formaPagamento.equals(clienteEntity.forma_pagamento()))
+                continue;
+
+            novaFormaPagamento = formaPagamento;
+            break;
+        }
+
+        HttpEntity<String> request = new HttpEntity<>(novaFormaPagamento.name());
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + clienteEntity.id() + "/formaPagamento",
+                        HttpMethod.PUT,
+                        request,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + clienteEntity.id(),
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        String formaPagamentoAlterado = documentContext.read("$.clientes[0].forma_pagamento");
+        assertThat(novaFormaPagamento.name()).isEqualTo(formaPagamentoAlterado);
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoClienteNaoExiste(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
+
+        HttpEntity<String> request = new HttpEntity<>(FormaPagamento.PIX.name());
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + cliente.id() + "/formaPagamento",
+                        HttpMethod.PUT,
+                        request,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+
+    @Test
+    void deveRetornarBadRequestQuandoClienteNaoExiste(){
+
+        ClienteEntity cliente = cadastrarNovoCliente();
+        HttpEntity<String> request = new HttpEntity<>("DOC_TED");
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + cliente.id() + "/formaPagamento",
+                        HttpMethod.PUT,
+                        request,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    }
+
+    @Test
+    void deveObterFormaPagamento(){
+
+        ClienteEntity clienteSalvo = cadastrarNovoCliente();
+
+        FormaPagamento formaPagamento = clienteSalvo.forma_pagamento();
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + clienteSalvo.id() + "/formaPagamento",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        String formaPagamentoCliente =  documentContext.read("$.forma_pagamento");
+
+        assertThat(formaPagamentoCliente).isEqualTo(formaPagamento.name());
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoTentarObterFormaPagamentoDEClienteNaoExistente(){
+        Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + cliente.id() + "/formaPagamento",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
 
 }
