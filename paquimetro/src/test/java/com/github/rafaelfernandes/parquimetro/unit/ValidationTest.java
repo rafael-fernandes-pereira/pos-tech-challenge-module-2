@@ -4,12 +4,18 @@ import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.Contato;
 import com.github.rafaelfernandes.parquimetro.controller.Endereco;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +24,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
+@Testcontainers
 public class ValidationTest {
 
     @Autowired
     private ValidacaoRequest validacaoRequest;
+
+
+    @Container //
+    private static MongoDBContainer mongoDBContainer = MongoContainers.getDefaultContainer();
+
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.data.mongodb.auto-index-creation", MongoContainers::getTrue);
+    }
 
     @Test
     void deveRetornarErros(){
