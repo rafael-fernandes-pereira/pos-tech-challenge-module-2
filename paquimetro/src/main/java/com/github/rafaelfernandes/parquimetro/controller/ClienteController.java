@@ -90,4 +90,17 @@ public class ClienteController {
 
     }
 
+    @DeleteMapping("/{requestId}")
+    ResponseEntity<Void> deletar(@PathVariable("requestId") UUID requestId){
+        if (this.service.deletar(requestId)){
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .build();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .build();
+    }
+
 }

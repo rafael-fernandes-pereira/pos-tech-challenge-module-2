@@ -94,4 +94,13 @@ public class ClienteService {
 
     }
 
+    public Boolean deletar(UUID requestId) {
+        if (this.repository.existsById(requestId)){
+            this.repository.deleteById(requestId);
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+
+    }
 }

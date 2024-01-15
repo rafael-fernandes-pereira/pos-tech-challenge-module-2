@@ -408,6 +408,52 @@ public class ParquimetroCadastroControllerTest {
 
     }
 
+    @Test
+    void deveDeletarCliente(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange(
+                        "/clientes/" + clienteSalvo.id(),
+                        HttpMethod.DELETE,
+                        null,
+                        Void.class
+                );
+
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<Void> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + clienteSalvo.id(),
+                        Void.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuantoDeletarEClienteNaoExistir(){
+
+        String naoExisteId = faker.internet().uuid();
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + naoExisteId,
+                        HttpMethod.DELETE,
+                        null,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
 
 
 
