@@ -20,6 +20,8 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -51,9 +53,9 @@ public class ClienteServiceTest {
 
         this.repository.insert(clienteEntity);
 
-        Message message = this.service.registro(cliente);
+        Optional<Message> message = this.service.registro(cliente);
 
-        assertThat(message.errors())
+        assertThat(message.get().errors())
                 .anyMatch(erro -> erro.equalsIgnoreCase("Campo documento e/ou campo email já existem!"))
         ;
 
@@ -74,7 +76,7 @@ public class ClienteServiceTest {
 
         message = this.service.registro(clienteEmail);
 
-        assertThat(message.errors())
+        assertThat(message.get().errors())
                 .anyMatch(erro -> erro.equalsIgnoreCase("Campo documento e/ou campo email já existem!"))
         ;
 
@@ -93,15 +95,9 @@ public class ClienteServiceTest {
 
         message = this.service.registro(clienteEmail);
 
-        assertThat(message.errors())
+        assertThat(message.get().errors())
                 .anyMatch(erro -> erro.equalsIgnoreCase("Campo documento e/ou campo email já existem!"))
         ;
-
-
-
-
-
-
     }
 
 }

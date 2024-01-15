@@ -7,6 +7,8 @@ import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.service.ClienteService;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,47 +33,47 @@ public class ClienteController {
     @GetMapping("/{requestId}")
     private ResponseEntity<Message> findById(@PathVariable UUID requestId){
 
-        Optional<ClienteEntity> clienteEntity = repository.findById(requestId);
+        Optional<Message> message = this.service.obterPorId(requestId);
 
-        if (clienteEntity.isPresent()){
-            Cliente cliente = ClienteDto.from(clienteEntity.get());
-
-            Message message = new Message(cliente, Boolean.FALSE, HttpStatus.OK.value(), null);
-
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(message);
-
-        }
-
-        return ResponseEntity
+        return message.map(value -> ResponseEntity
+                .status(HttpStatus.OK)
+                .body(value)).orElseGet(() -> ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .build()
-        ;
+                .build());
+
     }
 
     @PostMapping("/")
     private ResponseEntity<Message> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
 
-        Message message = this.service.registro(cliente);
+        Optional<Message> message = this.service.registro(cliente);
 
-        if (message.isError()){
+        if (message.get().isError()) {
             return ResponseEntity
-                    .status(message.httpStatusCode())
-                    .body(message);
+                    .status(message.get().httpStatusCode())
+                    .body(message.get());
         }
-
 
         URI location = uriComponentsBuilder
                 .path("clientes/{id}")
-                .buildAndExpand(message.cliente().id())
+                .buildAndExpand(message.get().cliente().id())
                 .toUri();
 
         return ResponseEntity
-                .status(message.httpStatusCode())
+                .status(message.get().httpStatusCode())
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(message);
+                .body(message.get());
 
+
+
+    }
+
+
+    @GetMapping("/")
+    ResponseEntity<Iterable<Message>> getAll(Pageable pageable){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.service.obterTodos(pageable).get());
     }
 
 }

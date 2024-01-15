@@ -10,6 +10,7 @@ import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
+@DirtiesContext
 public class ParquimetroCadastroControllerTest {
 
     @Container //
@@ -50,7 +53,6 @@ public class ParquimetroCadastroControllerTest {
     private ClienteRepository repository;
 
     @Test
-    @DirtiesContext
     void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
 
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
@@ -137,7 +139,6 @@ public class ParquimetroCadastroControllerTest {
     }
 
     @Test
-    @DirtiesContext
     void deveCadastrarUmNovoCliente(){
 
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
@@ -179,7 +180,6 @@ public class ParquimetroCadastroControllerTest {
     }
 
     @Test
-    @DirtiesContext
     void deveRetornarDuplicateRecordAoCadastrarUmNovoCliente(){
 
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
@@ -201,10 +201,138 @@ public class ParquimetroCadastroControllerTest {
                 );
 
         assertThat(createResponseDuplicate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
 
+    @Test
+    void deveRetornarComQuantidadePadrao(){
 
+        List<ClienteEntity> clienteEntities = new ArrayList<>();
+
+        for (int i =1; i <= 100; i++){
+            Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+            ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+            clienteEntities.add(clienteEntity);
+        }
+
+        repository.saveAll(clienteEntities);
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/clientes/",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        JSONArray page = documentContext.read("$.[*]");
+
+        assertThat(page.size()).isEqualTo(50);
 
     }
+
+    @Test
+    void deveRetornarComQuantidadeMaxima(){
+
+        List<ClienteEntity> clienteEntities = new ArrayList<>();
+
+        Boolean continueLoop = Boolean.TRUE;
+        Integer i = 1;
+
+        while (continueLoop){
+
+            Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+            ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+            Boolean isEmpty = clienteEntities.stream()
+                    .filter(clienteEntity1 ->
+                        clienteEntity1.documento().equals(clienteEntity.documento()) ||
+                        clienteEntity1.contato().email().equals(clienteEntity.contato().email())
+                    )
+                    .toList()
+                    .isEmpty();
+
+
+            if (!isEmpty) continue;
+
+            i++;
+            if (i > 2000) continueLoop = Boolean.FALSE;
+
+            clienteEntities.add(clienteEntity);
+
+
+        }
+
+        repository.saveAll(clienteEntities);
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/clientes/?page=0&size=2000",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        JSONArray page = documentContext.read("$.[*]");
+
+        assertThat(page.size()).isEqualTo(1000);
+
+    }
+
+    @Test
+    void deveRetornarNadaNaPagina1(){
+
+        List<ClienteEntity> clienteEntities = new ArrayList<>();
+
+        Boolean continueLoop = Boolean.TRUE;
+        Integer i = 1;
+
+        while (continueLoop){
+
+            Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+            ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+            Boolean isEmpty = clienteEntities.stream()
+                    .filter(clienteEntity1 ->
+                            clienteEntity1.documento().equals(clienteEntity.documento()) ||
+                                    clienteEntity1.contato().email().equals(clienteEntity.contato().email())
+                    )
+                    .toList()
+                    .isEmpty();
+
+
+            if (!isEmpty) continue;
+
+            i++;
+            if (i > 50) continueLoop = Boolean.FALSE;
+
+            clienteEntities.add(clienteEntity);
+
+
+        }
+
+        repository.saveAll(clienteEntities);
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/clientes/?page=1",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        JSONArray page = documentContext.read("$.[*]");
+
+        assertThat(page.size()).isEqualTo(0);
+
+    }
+
+
 
 
 }
