@@ -44,7 +44,7 @@ public class ValidationTest {
     void deveRetornarErros(){
         Cliente cliente = new Cliente(null, null, null,null,null,null, null);
 
-        List<String> erros = this.validacaoRequest.execute(cliente);
+        List<String> erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo nome deve estar preenchido"))
@@ -57,7 +57,7 @@ public class ValidationTest {
 
         cliente = new Cliente(null, "Teste", null,null,null,null, null);
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equals("O campo nome deve ter no mínimo de 20 e no máximo de 100 caracteres"))
@@ -65,7 +65,7 @@ public class ValidationTest {
 
         cliente = new Cliente(null, "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste", null,null,null,null, new ArrayList<String>());
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equals("O campo nome deve ter no mínimo de 20 e no máximo de 100 caracteres"))
@@ -75,7 +75,7 @@ public class ValidationTest {
         Endereco endereco = new Endereco(null, null, null, null, null, null);
         cliente = new Cliente(null, null, null,endereco,null,null, null);
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
 
         assertThat(erros)
@@ -99,7 +99,7 @@ public class ValidationTest {
 
         cliente = new Cliente(null, null, null,endereco,null,null, null);
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.logradouro deve ter no máximo 150 caracteres"))
@@ -119,7 +119,7 @@ public class ValidationTest {
 
         cliente = new Cliente(null, null, null,endereco,null,null, null);
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.logradouro deve ter no máximo 150 caracteres"))
@@ -132,7 +132,7 @@ public class ValidationTest {
 
         cliente = new Cliente(null, null, null,null,null,contato, null);
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato.email deve estar preenchido"))
@@ -144,7 +144,7 @@ public class ValidationTest {
 
         cliente = new Cliente(null, null, null,null,null,contato, null);
 
-        erros = this.validacaoRequest.execute(cliente);
+        erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato.email deve ser um email válido"))
@@ -159,7 +159,7 @@ public class ValidationTest {
     void deveRetornarSucesso(){
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
 
-        List<String> erros = this.validacaoRequest.execute(cliente);
+        List<String> erros = this.validacaoRequest.cliente(cliente);
 
         assertThat(erros).isEmpty();
 

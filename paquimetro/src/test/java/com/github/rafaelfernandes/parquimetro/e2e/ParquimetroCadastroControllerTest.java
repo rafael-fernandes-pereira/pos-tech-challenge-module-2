@@ -12,6 +12,9 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.datafaker.Faker;
 import net.minidev.json.JSONArray;
+import org.apache.commons.collections4.CollectionUtils;
+import org.assertj.core.api.HamcrestCondition;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +36,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -452,6 +455,54 @@ public class ParquimetroCadastroControllerTest {
                 );
 
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+    @Test
+    void deveAdicionarCarro(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+
+        String placa = GerarCadastro.placa();
+
+        List<String> carros = new ArrayList<>();
+
+        carros.add(placa);
+
+        HttpEntity<List<String>> request = new HttpEntity<>(carros);
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + clienteSalvo.id() + "/carros",
+                        HttpMethod.PUT,
+                        request,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        List<String> todosCarros = new ArrayList<>();
+        todosCarros.addAll(cliente.carros());
+        todosCarros.addAll(carros);
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + clienteSalvo.id(),
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        String id = documentContext.read("$.cliente.id");
+        List<String> carrosSalvos =  documentContext.read("$.cliente.carros");
+
+        assertThat(id).isEqualTo(clienteSalvo.id().toString());
+        assertTrue(CollectionUtils.isEqualCollection(carrosSalvos, todosCarros));
 
     }
 

@@ -29,7 +29,7 @@ public class ClienteService {
 
     public Optional<Message> registro(Cliente cliente){
 
-        List<String> erros = validacaoRequest.execute(cliente);
+        List<String> erros = validacaoRequest.cliente(cliente);
 
         if (!erros.isEmpty()){
             return Optional.of(new Message(null, Boolean.TRUE, HttpStatus.BAD_REQUEST.value(), erros));

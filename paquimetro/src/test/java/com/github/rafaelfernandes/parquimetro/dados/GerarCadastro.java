@@ -56,7 +56,7 @@ public class GerarCadastro {
 
     }
 
-    private static String placa(){
+    public static String placa(){
         return new StringBuilder()
                 .append(gerarLetras(3).toUpperCase())
                 .append(gerarDigitos(1))

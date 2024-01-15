@@ -1,14 +1,12 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
 import com.github.rafaelfernandes.parquimetro.controller.response.Message;
-import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
-import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.service.CarroService;
 import com.github.rafaelfernandes.parquimetro.service.ClienteService;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,12 +26,13 @@ public class ClienteController {
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
-    @Autowired private ClienteService service;
+    @Autowired private ClienteService clienteService;
+    @Autowired private CarroService carroService;
 
     @GetMapping("/{requestId}")
     private ResponseEntity<Message> findById(@PathVariable UUID requestId){
 
-        Optional<Message> message = this.service.obterPorId(requestId);
+        Optional<Message> message = this.clienteService.obterPorId(requestId);
 
         return message.map(value -> ResponseEntity
                 .status(HttpStatus.OK)
@@ -46,7 +45,7 @@ public class ClienteController {
     @PostMapping("/")
     private ResponseEntity<Message> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
 
-        Optional<Message> message = this.service.registro(cliente);
+        Optional<Message> message = this.clienteService.registro(cliente);
 
         if (message.get().isError()) {
             return ResponseEntity
@@ -72,35 +71,39 @@ public class ClienteController {
     ResponseEntity<Iterable<Message>> getAll(Pageable pageable){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.service.obterTodos(pageable).get());
+                .body(this.clienteService.obterTodos(pageable).get());
     }
 
     @PutMapping("/{requestId}")
     ResponseEntity<Void> alterar(@PathVariable UUID requestId, @RequestBody Cliente cliente){
 
-        if (this.service.alterar(requestId, cliente)){
-            return ResponseEntity
-                    .status(HttpStatus.NO_CONTENT)
-                    .build();
-        }
+        Boolean updated = this.clienteService.alterar(requestId, cliente);
 
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(updated ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
                 .build();
 
     }
 
     @DeleteMapping("/{requestId}")
     ResponseEntity<Void> deletar(@PathVariable("requestId") UUID requestId){
-        if (this.service.deletar(requestId)){
-            return ResponseEntity
-                    .status(HttpStatus.NO_CONTENT)
-                    .build();
-        }
+        Boolean deleted = this.clienteService.deletar(requestId);
 
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(deleted ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
                 .build();
+
+    }
+
+    @PutMapping("/{requestId}/carros")
+    ResponseEntity<Void> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
+
+        Boolean updated = this.carroService.incluir(requestId, carros);
+
+        return ResponseEntity
+                .status(updated ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
+                .build();
+
     }
 
 }
