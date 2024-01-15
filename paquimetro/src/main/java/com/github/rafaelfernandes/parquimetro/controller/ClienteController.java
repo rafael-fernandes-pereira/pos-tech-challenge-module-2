@@ -68,12 +68,26 @@ public class ClienteController {
 
     }
 
-
     @GetMapping("/")
     ResponseEntity<Iterable<Message>> getAll(Pageable pageable){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(this.service.obterTodos(pageable).get());
+    }
+
+    @PutMapping("/{requestId}")
+    ResponseEntity<Void> alterar(@PathVariable UUID requestId, @RequestBody Cliente cliente){
+
+        if (this.service.alterar(requestId, cliente)){
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .build();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .build();
+
     }
 
 }

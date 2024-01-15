@@ -82,4 +82,16 @@ public class ClienteService {
 
     }
 
+    public Boolean alterar(UUID requestId, Cliente cliente){
+
+        if (this.repository.existsById(requestId)){
+            ClienteEntity entity = ClienteDto.from(cliente, Boolean.FALSE);
+            this.repository.save(entity);
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+
+    }
+
 }
