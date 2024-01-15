@@ -1,26 +1,34 @@
 package com.github.rafaelfernandes.parquimetro.service;
 
-import com.github.rafaelfernandes.parquimetro.controller.Cliente;
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CarroService {
 
     @Autowired private ClienteRepository repository;
 
-    public Boolean incluir(UUID requestId, List<String> carros){
+    @Autowired private GenerateMessage generateMessage;
 
-        if (carros == null || carros.isEmpty() ) return Boolean.FALSE;
+    public MessageCliente incluir(UUID requestId, List<String> carros){
+
+        List<String> erros = new ArrayList<>();
+
+        if (carros == null || carros.isEmpty() ){
+            return this.generateMessage.errors(HttpStatus.BAD_REQUEST, erros);
+        }
 
         Optional<ClienteEntity> cliente = this.repository.findById(requestId);
 
-        if (cliente.isEmpty()) return Boolean.FALSE;
+        if (cliente.isEmpty()) {
+            return this.generateMessage.errors(HttpStatus.NOT_FOUND, erros);
+        }
 
         List<String> carrosSalvos = cliente.get().carros();
 
@@ -28,9 +36,6 @@ public class CarroService {
 
         novosCarros.addAll(carrosSalvos.stream().toList());
         novosCarros.addAll(carros.stream().toList());
-
-
-        if (novosCarros.isEmpty()) return Boolean.FALSE;
 
         ClienteEntity clienteEntity = new ClienteEntity(
                 requestId,
@@ -44,12 +49,7 @@ public class CarroService {
 
         this.repository.save(clienteEntity);
 
-        return Boolean.TRUE;
-
-
-
-
-
+        return this.generateMessage.success(HttpStatus.NO_CONTENT, null);
 
     }
 

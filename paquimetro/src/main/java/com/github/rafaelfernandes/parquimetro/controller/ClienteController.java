@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
-import com.github.rafaelfernandes.parquimetro.controller.response.Message;
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.service.CarroService;
 import com.github.rafaelfernandes.parquimetro.service.ClienteService;
@@ -15,7 +15,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -30,48 +29,46 @@ public class ClienteController {
     @Autowired private CarroService carroService;
 
     @GetMapping("/{requestId}")
-    private ResponseEntity<Message> findById(@PathVariable UUID requestId){
+    private ResponseEntity<MessageCliente> findById(@PathVariable UUID requestId){
 
-        Optional<Message> message = this.clienteService.obterPorId(requestId);
+        MessageCliente messageCliente = this.clienteService.obterPorId(requestId);
 
-        return message.map(value -> ResponseEntity
-                .status(HttpStatus.OK)
-                .body(value)).orElseGet(() -> ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .build());
+        return ResponseEntity
+                .status(messageCliente.httpStatusCode())
+                .body(messageCliente);
 
     }
 
     @PostMapping("/")
-    private ResponseEntity<Message> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
+    private ResponseEntity<MessageCliente> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
 
-        Optional<Message> message = this.clienteService.registro(cliente);
+        MessageCliente messageCliente = this.clienteService.registro(cliente);
 
-        if (message.get().isError()) {
+        if (!messageCliente.errors().isEmpty()) {
             return ResponseEntity
-                    .status(message.get().httpStatusCode())
-                    .body(message.get());
+                    .status(messageCliente.httpStatusCode())
+                    .body(messageCliente);
         }
 
         URI location = uriComponentsBuilder
                 .path("clientes/{id}")
-                .buildAndExpand(message.get().cliente().id())
+                .buildAndExpand(messageCliente.clientes().get(0).id())
                 .toUri();
 
         return ResponseEntity
-                .status(message.get().httpStatusCode())
+                .status(messageCliente.httpStatusCode())
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(message.get());
+                .body(messageCliente);
 
 
 
     }
 
     @GetMapping("/")
-    ResponseEntity<Iterable<Message>> getAll(Pageable pageable){
+    ResponseEntity<Iterable<MessageCliente>> getAll(Pageable pageable){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.clienteService.obterTodos(pageable).get());
+                .body(this.clienteService.obterTodos(pageable));
     }
 
     @PutMapping("/{requestId}")
@@ -96,13 +93,20 @@ public class ClienteController {
     }
 
     @PutMapping("/{requestId}/carros")
-    ResponseEntity<Void> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
+    ResponseEntity<MessageCliente> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
 
-        Boolean updated = this.carroService.incluir(requestId, carros);
+        MessageCliente messageCliente = this.carroService.incluir(requestId, carros);
 
         return ResponseEntity
-                .status(updated ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
-                .build();
+                .status(messageCliente.httpStatusCode())
+                .body(messageCliente);
+
+    }
+
+    @GetMapping("/{requestId}/carros")
+    ResponseEntity<Iterable<String>> obterCarros(@PathVariable UUID requestId){
+
+        return null;
 
     }
 

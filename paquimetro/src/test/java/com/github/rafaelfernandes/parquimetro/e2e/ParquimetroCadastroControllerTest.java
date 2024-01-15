@@ -1,7 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.e2e;
 
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import com.github.rafaelfernandes.parquimetro.controller.response.Message;
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
@@ -13,17 +13,12 @@ import com.jayway.jsonpath.JsonPath;
 import net.datafaker.Faker;
 import net.minidev.json.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
-import org.assertj.core.api.HamcrestCondition;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -33,7 +28,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,41 +78,44 @@ public class ParquimetroCadastroControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        String id = documentContext.read("$.cliente.id");
+        String id = documentContext.read("$.clientes[0].id");
         assertEquals(clienteSalvo.id().toString(), id);
 
-        String nome = documentContext.read("$.cliente.nome");
+        String nome = documentContext.read("$.clientes[0].nome");
         assertEquals(clienteSalvo.nome(), nome);
 
-        Long documento = documentContext.read("$.cliente.documento");
+        Long documento = documentContext.read("$.clientes[0].documento");
         assertEquals(clienteSalvo.documento(), documento);
 
-        String logradouro = documentContext.read("$.cliente.endereco.logradouro");
+        String logradouro = documentContext.read("$.clientes[0].endereco.logradouro");
         assertEquals(clienteSalvo.endereco().logradouro(), logradouro);
 
-        Integer numero = documentContext.read("$.cliente.endereco.numero");
+        Integer numero = documentContext.read("$.clientes[0].endereco.numero");
         assertEquals(clienteSalvo.endereco().numero(), numero);
 
-        String complemento = documentContext.read("$.cliente.endereco.complemento");
+        String complemento = documentContext.read("$.clientes[0].endereco.complemento");
         assertEquals(clienteSalvo.endereco().complemento(), complemento);
 
-        String bairro = documentContext.read("$.cliente.endereco.bairro");
+        String bairro = documentContext.read("$.clientes[0].endereco.bairro");
         assertEquals(clienteSalvo.endereco().bairro(), bairro);
 
-        String cidade = documentContext.read("$.cliente.endereco.cidade");
+        String cidade = documentContext.read("$.clientes[0].endereco.cidade");
         assertEquals(clienteSalvo.endereco().cidade(), cidade);
 
-        Estados estado = Estados.valueOf(documentContext.read("$.cliente.endereco.estado"));
+        Estados estado = Estados.valueOf(documentContext.read("$.clientes[0].endereco.estado"));
         assertEquals(clienteSalvo.endereco().estado(), estado);
 
-        String formaPagamento = documentContext.read("$.cliente.forma_pagamento");
+        String formaPagamento = documentContext.read("$.clientes[0].forma_pagamento");
         assertEquals(clienteSalvo.forma_pagamento().toString(), formaPagamento);
 
-        String email = documentContext.read("$.cliente.contato.email");
+        String email = documentContext.read("$.clientes[0].contato.email");
         assertEquals(clienteSalvo.contato().email(), email);
 
-        String telefone = documentContext.read("$.cliente.contato.celular");
+        String telefone = documentContext.read("$.clientes[0].contato.celular");
         assertEquals(clienteSalvo.contato().telefone(), telefone);
+
+        List<String> carros = documentContext.read("$.clientes[0].carros");
+        assertEquals(clienteSalvo.carros(), carros);
 
     }
 
@@ -131,7 +128,7 @@ public class ParquimetroCadastroControllerTest {
                 );
 
         assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isBlank();
+
 
     }
 
@@ -177,11 +174,11 @@ public class ParquimetroCadastroControllerTest {
 
         Cliente cliente = new Cliente(null, null, null, null, null, null, null);
 
-        ResponseEntity<Message> createResponse = this.restTemplate
+        ResponseEntity<MessageCliente> createResponse = this.restTemplate
                 .postForEntity(
                         "/clientes/",
                         cliente,
-                        Message.class
+                        MessageCliente.class
                 );
 
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -383,8 +380,8 @@ public class ParquimetroCadastroControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        String id = documentContext.read("$.cliente.id");
-        String nomeSaved =  documentContext.read("$.cliente.nome");
+        String id = documentContext.read("$.clientes[0].id");
+        String nomeSaved =  documentContext.read("$.clientes[0].nome");
 
         assertThat(id).isEqualTo(clienteSalvo.id().toString());
         assertThat(nomeSaved).isEqualTo(nome);
@@ -498,13 +495,83 @@ public class ParquimetroCadastroControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        String id = documentContext.read("$.cliente.id");
-        List<String> carrosSalvos =  documentContext.read("$.cliente.carros");
+        String id = documentContext.read("$.clientes[0].id");
+        List<String> carrosSalvos =  documentContext.read("$.clientes[0].carros");
 
         assertThat(id).isEqualTo(clienteSalvo.id().toString());
         assertTrue(CollectionUtils.isEqualCollection(carrosSalvos, todosCarros));
 
     }
+
+    @Test
+    void deveRetornarBadRequestQuandoNaoEnviaCarros(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
+
+        HttpEntity<List<String>> request = new HttpEntity<>(new ArrayList<>());
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + cliente.id() + "/carros",
+                        HttpMethod.PUT,
+                        request,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoClienteNaoExiste(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.FALSE);
+
+        List<String> carros = GerarCadastro.placas();
+
+        HttpEntity<List<String>> request = new HttpEntity<>(carros);
+
+        ResponseEntity<Void> responseUpdate = restTemplate
+                .exchange(
+                        "/clientes/" + cliente.id() + "/carros",
+                        HttpMethod.PUT,
+                        request,
+                        Void.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+    @Test
+    void deveRetornarCarros(){
+
+        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+
+        ClienteEntity clienteSalvo = repository.save(clienteEntity);
+
+        ResponseEntity<String> response = restTemplate
+                .getForEntity(
+                        "/clientes/" + clienteSalvo.id() + "/carros",
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        String id = documentContext.read("$.clientes[0].id");
+        List<String> carros =  documentContext.read("$.carros");
+
+        assertThat(id).isEqualTo(clienteSalvo.id().toString());
+        assertTrue(CollectionUtils.isEqualCollection(carros, cliente.carros()));
+
+    }
+
+
+
+
 
 
 

@@ -7,6 +7,8 @@ import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.entity.ContatoEntity;
 import com.github.rafaelfernandes.parquimetro.entity.EnderecoEntity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class ClienteDto {
@@ -66,6 +68,15 @@ public class ClienteDto {
                 contato,
                 cliente.carros()
         );
+    }
+
+    public static List<Cliente> getListFrom(ClienteEntity cliente){
+
+        ArrayList<Cliente> clientes = new ArrayList<>();
+        clientes.add(ClienteDto.from(cliente));
+
+        return clientes;
+
     }
 
 }

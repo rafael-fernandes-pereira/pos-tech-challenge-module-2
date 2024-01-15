@@ -1,7 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.service;
 
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import com.github.rafaelfernandes.parquimetro.controller.response.Message;
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
@@ -27,13 +27,14 @@ public class ClienteService {
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
-    public Optional<Message> registro(Cliente cliente){
+    @Autowired private GenerateMessage generateMessage;
+
+    public MessageCliente registro(Cliente cliente){
 
         List<String> erros = validacaoRequest.cliente(cliente);
 
         if (!erros.isEmpty()){
-            return Optional.of(new Message(null, Boolean.TRUE, HttpStatus.BAD_REQUEST.value(), erros));
-
+            return generateMessage.errors(HttpStatus.BAD_REQUEST, erros);
         }
 
         ClienteEntity clienteASalvar = ClienteDto.from(cliente, Boolean.TRUE);
@@ -42,42 +43,41 @@ public class ClienteService {
 
             ClienteEntity clienteSalvo = repository.insert(clienteASalvar);
 
-            Cliente clienteResponse = ClienteDto.from(clienteSalvo);
+            List<Cliente> clientes = ClienteDto.getListFrom(clienteSalvo);
 
-            return Optional.of(new Message(clienteResponse, Boolean.FALSE, HttpStatus.CREATED.value(), null));
+             return generateMessage.success(HttpStatus.CREATED, clientes);
 
         } catch (DuplicateKeyException ex){
             erros.add("Campo documento e/ou campo email já existem!");
-            return Optional.of(new Message(null, Boolean.TRUE, HttpStatus.CONFLICT.value(), erros));
+            return generateMessage.errors(HttpStatus.CONFLICT, erros);
         }
 
 
     }
 
-    public Optional<Message> obterPorId(UUID requestId){
+    public MessageCliente obterPorId(UUID requestId){
         Optional<ClienteEntity> clienteEntity = repository.findById(requestId);
 
         if (clienteEntity.isPresent()) {
-            Cliente cliente = ClienteDto.from(clienteEntity.get());
 
-            return Optional.of(new Message(cliente, Boolean.FALSE, HttpStatus.OK.value(), null));
+            List<Cliente> clientes = ClienteDto.getListFrom(clienteEntity.get());
+
+            return generateMessage.success(HttpStatus.OK, clientes);
         }
 
-        return Optional.empty();
+        return generateMessage.errors(HttpStatus.NOT_FOUND, null);
 
     }
 
-    public Optional<Iterable<Message>> obterTodos(Pageable pageable){
+    public Iterable<MessageCliente> obterTodos(Pageable pageable){
 
         Page<ClienteEntity> clienteEntities =  this.repository.findAll(pageable);
 
-        if (clienteEntities.isEmpty()) return Optional.of(new ArrayList<>());
+        if (clienteEntities.isEmpty()) return new ArrayList<>();
 
-        Iterable<Message> messages = clienteEntities.stream()
-                .map(clienteEntity -> new Message(ClienteDto.from(clienteEntity), Boolean.TRUE, HttpStatus.OK.value(), null))
+        return clienteEntities.stream()
+                .map(clienteEntity -> generateMessage.success(HttpStatus.OK, ClienteDto.getListFrom(clienteEntity)))
                 .collect(Collectors.toList());
-
-        return Optional.of(messages);
 
 
     }

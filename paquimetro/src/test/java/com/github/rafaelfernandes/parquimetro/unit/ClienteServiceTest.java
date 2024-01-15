@@ -2,7 +2,7 @@ package com.github.rafaelfernandes.parquimetro.unit;
 
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.Contato;
-import com.github.rafaelfernandes.parquimetro.controller.response.Message;
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dados.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
@@ -13,14 +13,11 @@ import net.datafaker.Faker;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,9 +51,9 @@ public class ClienteServiceTest {
 
         this.repository.insert(clienteEntity);
 
-        Optional<Message> message = this.service.registro(cliente);
+        MessageCliente messageCliente = this.service.registro(cliente);
 
-        assertThat(message.get().errors())
+        assertThat(messageCliente.errors())
                 .anyMatch(erro -> erro.equalsIgnoreCase("Campo documento e/ou campo email já existem!"))
         ;
 
@@ -75,9 +72,9 @@ public class ClienteServiceTest {
                 cliente.carros()
         );
 
-        message = this.service.registro(clienteEmail);
+        messageCliente = this.service.registro(clienteEmail);
 
-        assertThat(message.get().errors())
+        assertThat(messageCliente.errors())
                 .anyMatch(erro -> erro.equalsIgnoreCase("Campo documento e/ou campo email já existem!"))
         ;
 
@@ -94,9 +91,9 @@ public class ClienteServiceTest {
                 cliente.carros()
         );
 
-        message = this.service.registro(clienteEmail);
+        messageCliente = this.service.registro(clienteEmail);
 
-        assertThat(message.get().errors())
+        assertThat(messageCliente.errors())
                 .anyMatch(erro -> erro.equalsIgnoreCase("Campo documento e/ou campo email já existem!"))
         ;
     }

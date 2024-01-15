@@ -1,14 +1,12 @@
 package com.github.rafaelfernandes.parquimetro.controller.response;
 
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
-import org.springframework.http.HttpStatus;
+import com.github.rafaelfernandes.parquimetro.enums.FormaPagamento;
 
 import java.util.List;
 
-public record Message(
-        Cliente cliente,
-        Boolean isError,
-
+public record MessageCliente(
+        List<Cliente> clientes,
         Integer httpStatusCode,
         List<String> errors
 ) {
