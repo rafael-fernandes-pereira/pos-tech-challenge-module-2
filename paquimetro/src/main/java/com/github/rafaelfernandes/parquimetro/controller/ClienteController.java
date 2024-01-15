@@ -1,5 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.controller;
 
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.service.CarroService;
@@ -93,21 +94,24 @@ public class ClienteController {
     }
 
     @PutMapping("/{requestId}/carros")
-    ResponseEntity<MessageCliente> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
+    ResponseEntity<MessageCarros> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
 
-        MessageCliente messageCliente = this.carroService.incluir(requestId, carros);
+        MessageCarros messageCarros = this.carroService.incluir(requestId, carros);
 
         return ResponseEntity
-                .status(messageCliente.httpStatusCode())
-                .body(messageCliente);
+                .status(messageCarros.httpStatusCode())
+                .body(messageCarros);
 
     }
 
     @GetMapping("/{requestId}/carros")
-    ResponseEntity<Iterable<String>> obterCarros(@PathVariable UUID requestId){
+    ResponseEntity<MessageCarros> obterCarros(@PathVariable UUID requestId){
 
-        return null;
+        MessageCarros messageCarros = this.carroService.obterCarros(requestId);
 
+        return ResponseEntity
+                .status(messageCarros.httpStatusCode())
+                .body(messageCarros);
     }
 
 }

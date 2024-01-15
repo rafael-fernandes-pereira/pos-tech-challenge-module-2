@@ -1,6 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.service;
 
+import com.github.rafaelfernandes.parquimetro.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
+import com.github.rafaelfernandes.parquimetro.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,20 +16,18 @@ public class CarroService {
 
     @Autowired private ClienteRepository repository;
 
-    @Autowired private GenerateMessage generateMessage;
-
-    public MessageCliente incluir(UUID requestId, List<String> carros){
+    public MessageCarros incluir(UUID requestId, List<String> carros){
 
         List<String> erros = new ArrayList<>();
 
         if (carros == null || carros.isEmpty() ){
-            return this.generateMessage.errors(HttpStatus.BAD_REQUEST, erros);
+            return MessageDTO.carrosError(HttpStatus.BAD_REQUEST, erros);
         }
 
         Optional<ClienteEntity> cliente = this.repository.findById(requestId);
 
         if (cliente.isEmpty()) {
-            return this.generateMessage.errors(HttpStatus.NOT_FOUND, erros);
+            return MessageDTO.carrosError(HttpStatus.NOT_FOUND, erros);
         }
 
         List<String> carrosSalvos = cliente.get().carros();
@@ -49,7 +49,18 @@ public class CarroService {
 
         this.repository.save(clienteEntity);
 
-        return this.generateMessage.success(HttpStatus.NO_CONTENT, null);
+        return MessageDTO.carrosSuccess(HttpStatus.NO_CONTENT, null);
+
+    }
+
+    public MessageCarros obterCarros(UUID requestId){
+
+        Optional<ClienteEntity> cliente = this.repository.findById(requestId);
+
+        return cliente
+                .map(clienteEntity -> MessageDTO.carrosSuccess(HttpStatus.OK, clienteEntity.carros()))
+                .orElseGet(() -> MessageDTO.carrosError(HttpStatus.NOT_FOUND, null));
+
 
     }
 

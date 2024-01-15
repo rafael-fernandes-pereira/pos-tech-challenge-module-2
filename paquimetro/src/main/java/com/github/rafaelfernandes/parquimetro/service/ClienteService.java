@@ -3,6 +3,7 @@ package com.github.rafaelfernandes.parquimetro.service;
 import com.github.rafaelfernandes.parquimetro.controller.Cliente;
 import com.github.rafaelfernandes.parquimetro.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.dto.ClienteDto;
+import com.github.rafaelfernandes.parquimetro.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.validation.ValidacaoRequest;
@@ -27,14 +28,12 @@ public class ClienteService {
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
-    @Autowired private GenerateMessage generateMessage;
-
     public MessageCliente registro(Cliente cliente){
 
         List<String> erros = validacaoRequest.cliente(cliente);
 
         if (!erros.isEmpty()){
-            return generateMessage.errors(HttpStatus.BAD_REQUEST, erros);
+            return MessageDTO.clienteError(HttpStatus.BAD_REQUEST, erros);
         }
 
         ClienteEntity clienteASalvar = ClienteDto.from(cliente, Boolean.TRUE);
@@ -45,11 +44,11 @@ public class ClienteService {
 
             List<Cliente> clientes = ClienteDto.getListFrom(clienteSalvo);
 
-             return generateMessage.success(HttpStatus.CREATED, clientes);
+             return MessageDTO.clienteSuccess(HttpStatus.CREATED, clientes);
 
         } catch (DuplicateKeyException ex){
             erros.add("Campo documento e/ou campo email já existem!");
-            return generateMessage.errors(HttpStatus.CONFLICT, erros);
+            return MessageDTO.clienteError(HttpStatus.CONFLICT, erros);
         }
 
 
@@ -62,10 +61,10 @@ public class ClienteService {
 
             List<Cliente> clientes = ClienteDto.getListFrom(clienteEntity.get());
 
-            return generateMessage.success(HttpStatus.OK, clientes);
+            return MessageDTO.clienteSuccess(HttpStatus.OK, clientes);
         }
 
-        return generateMessage.errors(HttpStatus.NOT_FOUND, null);
+        return MessageDTO.clienteError(HttpStatus.NOT_FOUND, null);
 
     }
 
@@ -76,7 +75,7 @@ public class ClienteService {
         if (clienteEntities.isEmpty()) return new ArrayList<>();
 
         return clienteEntities.stream()
-                .map(clienteEntity -> generateMessage.success(HttpStatus.OK, ClienteDto.getListFrom(clienteEntity)))
+                .map(clienteEntity -> MessageDTO.clienteSuccess(HttpStatus.OK, ClienteDto.getListFrom(clienteEntity)))
                 .collect(Collectors.toList());
 
 
