@@ -6,15 +6,22 @@ import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.service.ClienteService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Estacionamento;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.MessageEstacionamento;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.MessageFinalizado;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Recibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.dto.MessageEstacionamentoDTO;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +35,12 @@ public class EstacionamentoService {
     @Autowired
     private ClienteService clienteService;
 
+    @Value("${estacionamento.valor.fixo}")
+    Integer valorFixo;
+
+    @Value("${estacionamento.valor.multa}")
+    Integer valorMulta;
+
     public MessageEstacionamento registrar(TipoPeriodo tipoPeriodo, UUID clienteId, String carro, Integer duracao){
 
         if (tipoPeriodo.equals(TipoPeriodo.FIXO) && (duracao == null || duracao <= 0))
@@ -36,7 +49,7 @@ public class EstacionamentoService {
         MessageCliente messageCliente = this.clienteService.obterPorId(clienteId);
 
         if (!messageCliente.errors().isEmpty())
-            return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, messageCliente.errors());
+            return MessageEstacionamentoDTO.error(HttpStatus.valueOf(messageCliente.httpStatusCode()), messageCliente.errors());
 
         Cliente cliente = messageCliente.clientes().get(0);
 
@@ -71,6 +84,69 @@ public class EstacionamentoService {
         }
 
         return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, "Registro não encontrado");
+
+    }
+
+    public MessageFinalizado finalizar(UUID clienteId, String carro){
+
+        MessageCliente messageCliente = this.clienteService.obterPorId(clienteId);
+
+        if (!messageCliente.errors().isEmpty())
+            return MessageFinalizado.error(HttpStatus.valueOf(messageCliente.httpStatusCode()), messageCliente.errors());
+
+        Cliente cliente = messageCliente.clientes().get(0);
+
+        if (!cliente.carros().contains(carro))
+            return MessageFinalizado.error(HttpStatus.NOT_FOUND, "Carro não cadastrado para esse cliente");
+
+        MessageEstacionamento messageEstacionamento = this.obterAbertoPorCarro(clienteId, carro);
+
+        if (messageEstacionamento.estacionamentos().isEmpty())
+            return MessageFinalizado.error(HttpStatus.NOT_FOUND, "Registro de estacionamento não encontrado");
+
+        Estacionamento estacionamento = messageEstacionamento.estacionamentos().get(0);
+
+        LocalDateTime fim = LocalDateTime.now();
+
+        BigDecimal valor = new BigDecimal(estacionamento.duracao_fixa())
+                .multiply(new BigDecimal(this.valorFixo))
+                .multiply(new BigDecimal("1.0"));
+
+        Duration duration = Duration.between(estacionamento.inicio(), fim);
+
+        Long tempoPedido = estacionamento.duracao_fixa() * 3600L;
+
+
+        Long horasAMais = 0L;
+
+        Long segundosAMais = 0L;
+
+        if (duration.getSeconds() > tempoPedido){
+
+            segundosAMais = duration.getSeconds() - tempoPedido;
+
+            horasAMais = segundosAMais / 3600;
+
+            Long segundosSobrando = segundosAMais % 3600;
+
+            if (horasAMais < 1L) {
+                horasAMais = 1L;
+            } else if (segundosSobrando > 0){
+                horasAMais++;
+            }
+
+
+        }
+
+        BigDecimal multa = new BigDecimal("1.0")
+                .multiply(new BigDecimal(horasAMais))
+                .multiply(new BigDecimal(this.valorMulta));
+
+        BigDecimal valorFinal = valor.add(multa);
+
+        Recibo recibo = new Recibo(estacionamento.inicio(), fim, estacionamento.duracao_fixa(), valor, segundosAMais, multa, valorFinal);
+        return new MessageFinalizado(recibo, HttpStatus.OK.value(), null);
+
 
     }
 

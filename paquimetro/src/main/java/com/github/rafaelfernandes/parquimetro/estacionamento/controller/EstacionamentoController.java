@@ -4,6 +4,8 @@ import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Estacionamento;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.MessageEstacionamento;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.MessageFinalizado;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Recibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.dto.MessageEstacionamentoDTO;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -71,6 +74,19 @@ public class EstacionamentoController {
                 .status(messageEstacionamento.http_status_code())
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
                 .body(messageEstacionamento);
+    }
+
+    @PostMapping("/{requestId}/{carro}/finalizar")
+    ResponseEntity<MessageFinalizado> finalizar(@PathVariable UUID requestId, @PathVariable String carro){
+
+
+        MessageFinalizado messageFinalizado = this.estacionamentoService.finalizar(requestId, carro);
+
+        return ResponseEntity
+                .status(messageFinalizado.http_status_code())
+                .body(messageFinalizado);
+
+
     }
 
 

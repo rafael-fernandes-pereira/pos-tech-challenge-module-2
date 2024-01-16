@@ -3,10 +3,12 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.e2e;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.ContatoEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Estacionamento;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoRepository;
@@ -32,6 +34,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -300,7 +303,7 @@ public class EstacionamentoControllerTest {
     }
 
     @Test
-    void deveRetonarBadREquestQuandoEnviaDuracaoZeroParaFixo(){
+    void deveRetonarBadREquestQuandoEnviaDuracaoZeroOuMenorParaFixo(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
         Fixo fixo = new Fixo(0);
@@ -532,6 +535,71 @@ public class EstacionamentoControllerTest {
         duracao = documentContext.read("$.estacionamentos[0].duracao_fixa");
 
         assertThat(duracao).isNull();
+
+    }
+
+
+    @Test
+    void deveFinalizarFixo2HorasSemMulta(){
+
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+
+        EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
+                UUID.randomUUID(),
+                clienteCarro.cliente().id(),
+                clienteCarro.carro(),
+                clienteCarro.cliente().nome(),
+                new ContatoEntity(
+                        clienteCarro.cliente().contato().email(),
+                        clienteCarro.cliente().contato().celular()
+                ),
+                clienteCarro.cliente().forma_pagamento(),
+                TipoPeriodo.FIXO,
+                2,
+                LocalDateTime.now().minusHours(2L)
+        );
+
+        this.estacionamentoRepository.insert(estacionamentoAberto);
+
+        ResponseEntity<String> finalizarResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/finalizar",
+                        null,
+                        String.class
+                );
+
+        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
+
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.recibo.inicio"));
+        assertThat(inicio).isNotNull();
+
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.recibo.fim"));
+        assertThat(fim).isNotNull();
+
+        Integer horasSolicitadas = documentContext.read("$.recibo.horas_solicitadas");
+        assertThat(horasSolicitadas).isEqualTo(2);
+
+        Double valor = documentContext.read("$.recibo.valor");
+        assertThat(valor).isEqualTo(14.0);
+
+        Integer tempoAMais = documentContext.read("$.recibo.tempo_a_mais");
+        assertThat(tempoAMais).isEqualTo(0L);
+
+        Double multa = documentContext.read("$.recibo.multa");
+        assertThat(multa).isEqualTo(0);
+
+        Double valorFinal = documentContext.read("$.recibo.valor_final");
+        assertThat(valorFinal).isEqualTo(14.0);
+
+        Integer httpStatusCode = documentContext.read("$.http_status_code");
+        assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
+
+        List<String> erros = documentContext.read("$.erros");
+        assertThat(erros).isNull();
 
     }
 
