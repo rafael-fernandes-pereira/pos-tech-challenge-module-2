@@ -5,7 +5,9 @@ import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
 import com.github.rafaelfernandes.parquimetro.util.ClienteCarro;
 import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
@@ -25,6 +27,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.net.URI;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,11 +49,14 @@ public class EstacionamentoControllerTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private ClienteRepository repository;
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private EstacionamentoService estacionamentoService;
 
     @BeforeEach
     void setup(){
-        repository.deleteAll();
+        clienteRepository.deleteAll();
     }
 
     @NotNull
@@ -58,9 +64,11 @@ public class EstacionamentoControllerTest {
         Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
         ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
 
-        ClienteEntity clienteSavo = repository.save(clienteEntity);
+        ClienteEntity clienteSalvoEntity = clienteRepository.save(clienteEntity);
 
-        return new ClienteCarro(clienteSavo.id(), clienteSavo.carros().get(0));
+        Cliente clienteSalvo = ClienteDto.from(clienteSalvoEntity);
+
+        return new ClienteCarro(clienteSalvo, clienteSalvo.carros().get(0));
     }
 
     @Test
@@ -68,9 +76,11 @@ public class EstacionamentoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
+        this.estacionamentoService.registrar(TipoPeriodo.FIXO, clienteCarro.cliente().id(), clienteCarro.carro(), 3);
+
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.id() + "/" + clienteCarro.carro(),
+                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
                         String.class
                 );
 
@@ -80,7 +90,7 @@ public class EstacionamentoControllerTest {
 
         String id = documentContext.read("$.estacionamentos[0].cliente_id");
 
-        assertThat(id).isEqualTo(clienteCarro.id().toString());
+        assertThat(id).isEqualTo(clienteCarro.cliente().id().toString());
 
         String carro = documentContext.read("$.estacionamentos[0].carro");
 
@@ -108,10 +118,33 @@ public class EstacionamentoControllerTest {
         List<String> erros = documentContext.read("$.erros");
         assertThat(erros).isNull();
 
+    }
 
+    @Test
+    void devCadastrarPeriodoFixo(){
 
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
 
+        Fixo fixo = new Fixo(3);
 
+        ResponseEntity<Void> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        fixo,
+                        Void.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        URI location = createResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        location,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
     }
 
