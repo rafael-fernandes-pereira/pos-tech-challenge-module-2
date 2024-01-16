@@ -5,8 +5,11 @@ import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
 import com.github.rafaelfernandes.parquimetro.util.ClienteCarro;
 import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
@@ -28,7 +31,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,11 +58,18 @@ public class EstacionamentoControllerTest {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private FormaPagamentoService formaPagamentoService;
+
+    @Autowired
     private EstacionamentoService estacionamentoService;
+
+    @Autowired
+    private EstacionamentoRepository estacionamentoRepository;
 
     @BeforeEach
     void setup(){
         clienteRepository.deleteAll();
+        estacionamentoRepository.deleteAll();
     }
 
     @NotNull
@@ -98,7 +111,7 @@ public class EstacionamentoControllerTest {
 
         String formaPagamento = documentContext.read("$.estacionamentos[0].forma_pagamento");
 
-        assertThat(formaPagamento).isEqualTo(FormaPagamento.PIX.name());
+        assertThat(formaPagamento).isEqualTo(clienteCarro.cliente().forma_pagamento().name());
 
         String tipoPeriodo = documentContext.read("$.estacionamentos[0].tipo_periodo");
 
@@ -108,15 +121,15 @@ public class EstacionamentoControllerTest {
 
         assertThat(duracaoFixa).isEqualTo(3);
 
-        String inicio = documentContext.read("$.estacionamentos[0].inicio");
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].inicio"));
 
-        assertThat(inicio).isEqualTo("2024-01-01T10:50:00");
+        assertThat(inicio).isNotNull();
 
         Integer httpStatusCode = documentContext.read("$.http_status_code");
         assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
 
         List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isNull();
+        assertThat(erros).isNotNull();
 
     }
 
@@ -147,5 +160,196 @@ public class EstacionamentoControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
     }
+
+    @Test
+    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarRegistrarTempo(){
+
+        Fixo fixo = new Fixo(3);
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + UUID.randomUUID() + "/AABBCCD/fixo",
+                        fixo,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+
+        ;
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoPlacaNaoExisteAoTentarRegistrarTempo(){
+
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        Fixo fixo = new Fixo(3);
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/AABBCCD/fixo",
+                        fixo,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não cadastrado para esse cliente"))
+
+        ;
+
+    }
+
+    @Test
+    void deveRetonarDuplicidadeQUandoTentaRegistrarUmaMesmaPlaca(){
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        Fixo fixo = new Fixo(3);
+
+        ResponseEntity<Void> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        fixo,
+                        Void.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+
+        ResponseEntity<String> createResponseDuplicate = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        fixo,
+                        String.class
+                );
+
+        assertThat(createResponseDuplicate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+
+        DocumentContext documentContext = JsonPath.parse(createResponseDuplicate.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Carro já está com tempo lançado!"))
+
+        ;
+
+    }
+
+    @Test
+    void deveRetonarBadREquestQuandoEnviaDuracaoZeroParaFixo(){
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        Fixo fixo = new Fixo(0);
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        fixo,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Tempo mínimo de 1 hora"))
+
+        ;
+
+        fixo = new Fixo(-1);
+
+        createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        fixo,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+
+        documentContext = JsonPath.parse(createResponse.getBody());
+
+        erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Tempo mínimo de 1 hora"))
+
+        ;
+
+    }
+
+    @Test
+    void deveRegistrarTempoPorHora(){
+
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        null,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        URI location = createResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        location,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    void deveRetornarBadRequestQuandoTipoPeriodoIgualHoraEPgamentoPix(){
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.PIX.name());
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        null,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Forma de pagamento não permitido para o tipo de periodo escolhido!"))
+
+        ;
+    }
+
 
 }

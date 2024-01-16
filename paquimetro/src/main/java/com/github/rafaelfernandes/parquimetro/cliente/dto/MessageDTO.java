@@ -17,6 +17,12 @@ public class MessageDTO {
         return new MessageCliente(null, httpStatus.value(), erros == null ? new ArrayList<>() : erros);
     }
 
+    public static MessageCliente clienteError(HttpStatus httpStatus, String erro){
+        var erros = new ArrayList<String>();
+        erros.add(erro);
+        return new MessageCliente(null, httpStatus.value(), erros);
+    }
+
     public static MessageCliente clienteSuccess(HttpStatus httpStatus, List<Cliente> clientes){
         return new MessageCliente(clientes, httpStatus.value(), new ArrayList<>());
     }

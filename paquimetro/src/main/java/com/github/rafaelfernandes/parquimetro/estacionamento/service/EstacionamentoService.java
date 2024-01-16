@@ -35,8 +35,8 @@ public class EstacionamentoService {
 
         MessageCliente messageCliente = this.clienteService.obterPorId(clienteId);
 
-        if (messageCliente.clientes().isEmpty())
-            return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, "Cliente não existe");
+        if (!messageCliente.errors().isEmpty())
+            return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, messageCliente.errors());
 
         Cliente cliente = messageCliente.clientes().get(0);
 

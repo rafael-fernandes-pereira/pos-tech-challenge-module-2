@@ -64,7 +64,7 @@ public class ClienteService {
             return MessageDTO.clienteSuccess(HttpStatus.OK, clientes);
         }
 
-        return MessageDTO.clienteError(HttpStatus.NOT_FOUND, null);
+        return MessageDTO.clienteError(HttpStatus.NOT_FOUND, "Cliente não existe!");
 
     }
 

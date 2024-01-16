@@ -39,9 +39,28 @@ public class EstacionamentoController {
     }
 
     @PostMapping("/{requestId}/{carro}/fixo")
-    ResponseEntity<MessageEstacionamento> registrarFixo(@PathVariable UUID requestId, @PathVariable String carro, @RequestBody Fixo fixo, UriComponentsBuilder uriComponentsBuilder){
+    ResponseEntity<MessageEstacionamento> registrarFixo(@PathVariable UUID requestId,
+                                                        @PathVariable String carro,
+                                                        @RequestBody Fixo fixo,
+                                                        UriComponentsBuilder uriComponentsBuilder){
 
         MessageEstacionamento messageEstacionamento = this.estacionamentoService.registrar(TipoPeriodo.FIXO, requestId, carro, fixo.duracao_fixa());
+
+        URI location = uriComponentsBuilder
+                .path("estacionamento/{requestId}/{carro}")
+                .buildAndExpand(requestId, carro)
+                .toUri();
+
+        return ResponseEntity
+                .status(messageEstacionamento.http_status_code())
+                .header(HttpHeaders.LOCATION, location.toASCIIString())
+                .body(messageEstacionamento);
+    }
+
+    @PostMapping("/{requestId}/{carro}/hora")
+    ResponseEntity<MessageEstacionamento> registrarHora(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
+
+        MessageEstacionamento messageEstacionamento = this.estacionamentoService.registrar(TipoPeriodo.HORA, requestId, carro, null);
 
         URI location = uriComponentsBuilder
                 .path("estacionamento/{requestId}/{carro}")
