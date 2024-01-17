@@ -620,6 +620,168 @@ public class EstacionamentoAbertoControllerTest {
 
     }
 
+    @Test
+    void deveFinalizar2HorasComMulta(){
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+
+        EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
+                UUID.randomUUID(),
+                clienteCarro.cliente().id(),
+                clienteCarro.carro(),
+                clienteCarro.cliente().nome(),
+                new ContatoEntity(
+                        clienteCarro.cliente().contato().email(),
+                        clienteCarro.cliente().contato().celular()
+                ),
+                clienteCarro.cliente().forma_pagamento(),
+                TipoPeriodo.FIXO,
+                2,
+                LocalDateTime.now().minusHours(3L).minusMinutes(30L)
+        );
+
+        this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+
+        ResponseEntity<String> finalizarResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/finalizar",
+                        null,
+                        String.class
+                );
+
+        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
+
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.inicio"));
+        assertThat(inicio).isNotNull();
+
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.fim"));
+        assertThat(fim).isNotNull();
+
+        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.horas_solicitadas");
+        assertThat(horasSolicitadas).isEqualTo(2);
+
+        Double valor = documentContext.read("$.estacionamentos[0].recibo.valor");
+        assertThat(valor).isEqualTo(14.0);
+
+        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.tempo_a_mais");
+        assertThat(tempoAMais).isEqualTo(5400L);
+
+        Double multa = documentContext.read("$.estacionamentos[0].recibo.multa");
+        assertThat(multa).isEqualTo(20);
+
+        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.valor_final");
+        assertThat(valorFinal).isEqualTo(34.0);
+
+        Integer httpStatusCode = documentContext.read("$.http_status_code");
+        assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
+
+        List<String> erros = documentContext.read("$.erros");
+        assertThat(erros).isNull();
+
+        URI location = finalizarResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> responseFinalizado = this.restTemplate
+                .getForEntity(
+                        location,
+                        String.class
+                );
+
+        assertThat(responseFinalizado.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void deveFinalizarComHoraVariavel(){
+
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+
+        EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
+                UUID.randomUUID(),
+                clienteCarro.cliente().id(),
+                clienteCarro.carro(),
+                clienteCarro.cliente().nome(),
+                new ContatoEntity(
+                        clienteCarro.cliente().contato().email(),
+                        clienteCarro.cliente().contato().celular()
+                ),
+                clienteCarro.cliente().forma_pagamento(),
+                TipoPeriodo.HORA,
+                null,
+                LocalDateTime.now().minusHours(3L).minusMinutes(30L)
+        );
+
+        this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+
+        ResponseEntity<String> finalizarResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/finalizar",
+                        null,
+                        String.class
+                );
+
+        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
+
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.inicio"));
+        assertThat(inicio).isNotNull();
+
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.fim"));
+        assertThat(fim).isNotNull();
+
+        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.horas_solicitadas");
+        assertThat(horasSolicitadas).isNull();
+
+        Double valor = documentContext.read("$.estacionamentos[0].recibo.valor");
+        assertThat(valor).isEqualTo(25.0);
+
+        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.tempo_a_mais");
+        assertThat(tempoAMais).isEqualTo(0L);
+
+        Double multa = documentContext.read("$.estacionamentos[0].recibo.multa");
+        assertThat(multa).isEqualTo(0.0);
+
+        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.valor_final");
+        assertThat(valorFinal).isEqualTo(25.0);
+
+        Integer httpStatusCode = documentContext.read("$.http_status_code");
+        assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
+
+        List<String> erros = documentContext.read("$.erros");
+        assertThat(erros).isNull();
+
+        URI location = finalizarResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> responseFinalizado = this.restTemplate
+                .getForEntity(
+                        location,
+                        String.class
+                );
+
+        assertThat(responseFinalizado.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
 
 
 

@@ -45,10 +45,16 @@ public class EstacionamentoService {
     ClienteService clienteService;
 
     @Value("${estacionamento.valor.fixo}")
-    Integer valorFixo;
+    Double valorFixo;
 
     @Value("${estacionamento.valor.multa}")
-    Integer valorMulta;
+    Double valorMulta;
+
+    @Value("${estacionamento.valor.hora.primeira}")
+    Double valorPrimeraHora;
+
+    @Value("${estacionamento.valor.hora.restante}")
+    Double valorRestanteHora;
 
     public MessageAberto registrar(TipoPeriodo tipoPeriodo, UUID clienteId, String carro, Integer duracao){
 
@@ -110,8 +116,6 @@ public class EstacionamentoService {
 
         MessageAberto messageAberto = this.obterAbertoPorCarro(clienteId, carro);
 
-
-
         if (messageAberto.estacionamentos() == null || messageAberto.estacionamentos().isEmpty())
             return MessageEncerrado.error(HttpStatus.NOT_FOUND, "Registro de estacionamento não encontrado");
 
@@ -119,41 +123,62 @@ public class EstacionamentoService {
 
         LocalDateTime fim = LocalDateTime.now();
 
-        BigDecimal valor = new BigDecimal(estacionamentoAberto.duracao_fixa())
-                .multiply(new BigDecimal(this.valorFixo))
-                .multiply(new BigDecimal("1.0"));
+        BigDecimal valor, multa= new BigDecimal("0.0"), valorFinal;
+        Long segundosAMais = 0L;
 
         Duration duration = Duration.between(estacionamentoAberto.inicio(), fim);
 
-        Long tempoPedido = estacionamentoAberto.duracao_fixa() * 3600L;
+        if (TipoPeriodo.FIXO.equals(estacionamentoAberto.tipo_periodo())){
+
+            valor = new BigDecimal(estacionamentoAberto.duracao_fixa())
+                    .multiply(new BigDecimal(this.valorFixo))
+                    .multiply(new BigDecimal("1.0"));
 
 
-        Long horasAMais = 0L;
+            Long tempoPedido = estacionamentoAberto.duracao_fixa() * 3600L;
 
-        Long segundosAMais = 0L;
+            Long horasAMais = 0L;
 
-        if (duration.getSeconds() > tempoPedido){
+            segundosAMais = 0L;
 
-            segundosAMais = duration.getSeconds() - tempoPedido;
+            if (duration.getSeconds() > tempoPedido){
 
-            horasAMais = segundosAMais / 3600;
+                segundosAMais = duration.getSeconds() - tempoPedido;
 
-            Long segundosSobrando = segundosAMais % 3600;
+                horasAMais = segundosAMais / 3600;
 
-            if (horasAMais < 1L) {
-                horasAMais = 1L;
-            } else if (segundosSobrando > 0){
-                horasAMais++;
+                Long segundosSobrando = segundosAMais % 3600;
+
+                if (horasAMais < 1L) {
+                    horasAMais = 1L;
+                } else if (segundosSobrando > 0){
+                    horasAMais++;
+                }
+
+
             }
 
+            multa = new BigDecimal("1.0")
+                    .multiply(new BigDecimal(horasAMais))
+                    .multiply(new BigDecimal(this.valorMulta));
 
+            valorFinal = valor.add(multa);
+        } else {
+
+            Long horas = duration.toHours();
+
+            Long horaAMais =  duration.getSeconds() > (horas * 3600) ? 1L : 0L;
+
+            Long horasFinal = horas + horaAMais - 1L;
+
+            valor = new BigDecimal(horasFinal)
+                    .multiply(new BigDecimal(this.valorRestanteHora))
+                    .multiply(new BigDecimal("1.0"))
+                    .add(new BigDecimal(this.valorPrimeraHora));
+
+            valorFinal = valor;
         }
 
-        BigDecimal multa = new BigDecimal("1.0")
-                .multiply(new BigDecimal(horasAMais))
-                .multiply(new BigDecimal(this.valorMulta));
-
-        BigDecimal valorFinal = valor.add(multa);
 
         Recibo recibo = new Recibo(estacionamentoAberto.inicio(), fim, estacionamentoAberto.duracao_fixa(), valor, segundosAMais, multa, valorFinal);
 
