@@ -10,8 +10,10 @@ import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Recibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.dto.MessageEstacionamentoDTO;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
+import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEncerradoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEncerradoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
@@ -19,10 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,10 +30,13 @@ import java.util.UUID;
 public class EstacionamentoService {
 
     @Autowired
-    private EstacionamentoRepository estacionamentoRepository;
+    EstacionamentoAbertoRepository estacionamentoAbertoRepository;
 
     @Autowired
-    private ClienteService clienteService;
+    EstacionamentoEncerradoRepository estacionamentoEncerradoRepository;
+
+    @Autowired
+    ClienteService clienteService;
 
     @Value("${estacionamento.valor.fixo}")
     Integer valorFixo;
@@ -63,7 +66,7 @@ public class EstacionamentoService {
 
             EstacionamentoAbertoEntity estacionamentoAberto = EstacionamentoAbertoEntity.novo(cliente, carro, tipoPeriodo, duracao);
 
-            EstacionamentoAbertoEntity salvo = this.estacionamentoRepository.insert(estacionamentoAberto);
+            EstacionamentoAbertoEntity salvo = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
 
             Estacionamento estacionamento = Estacionamento.fromEstacionamentoAberto(salvo);
 
@@ -76,7 +79,7 @@ public class EstacionamentoService {
     }
 
     public MessageEstacionamento obterAbertoPorCarro(UUID clienteId, String carro){
-        Optional<EstacionamentoAbertoEntity> entity = Optional.ofNullable(this.estacionamentoRepository.findByClienteIdAndCarro(clienteId, carro));
+        Optional<EstacionamentoAbertoEntity> entity = Optional.ofNullable(this.estacionamentoAbertoRepository.findByClienteIdAndCarro(clienteId, carro));
 
         if (entity.isPresent()){
             Estacionamento estacionamento = Estacionamento.fromEstacionamentoAberto(entity.get());
@@ -145,9 +148,14 @@ public class EstacionamentoService {
         BigDecimal valorFinal = valor.add(multa);
 
         Recibo recibo = new Recibo(estacionamento.inicio(), fim, estacionamento.duracao_fixa(), valor, segundosAMais, multa, valorFinal);
+
+        EstacionamentoEncerradoEntity estacionamentoEncerradoEntity = EstacionamentoEncerradoEntity.from(estacionamento, recibo);
+
+        this.estacionamentoEncerradoRepository.insert(estacionamentoEncerradoEntity);
+
+        this.estacionamentoAbertoRepository.deleteById(estacionamento.id());
+
         return new MessageFinalizado(recibo, HttpStatus.OK.value(), null);
-
-
     }
 
 }

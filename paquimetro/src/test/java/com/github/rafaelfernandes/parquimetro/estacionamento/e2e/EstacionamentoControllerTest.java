@@ -8,10 +8,9 @@ import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Estacionamento;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
 import com.github.rafaelfernandes.parquimetro.util.ClienteCarro;
 import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
@@ -34,7 +33,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -67,12 +65,12 @@ public class EstacionamentoControllerTest {
     private EstacionamentoService estacionamentoService;
 
     @Autowired
-    private EstacionamentoRepository estacionamentoRepository;
+    private EstacionamentoAbertoRepository estacionamentoAbertoRepository;
 
     @BeforeEach
     void setup(){
         clienteRepository.deleteAll();
-        estacionamentoRepository.deleteAll();
+        estacionamentoAbertoRepository.deleteAll();
     }
 
     @NotNull
@@ -516,7 +514,7 @@ public class EstacionamentoControllerTest {
 
         assertThat(duracao).isNull();
 
-        this.estacionamentoRepository.deleteAll();
+        this.estacionamentoAbertoRepository.deleteAll();
 
         fixo = new Fixo(-1);
 
@@ -561,7 +559,7 @@ public class EstacionamentoControllerTest {
                 LocalDateTime.now().minusHours(2L)
         );
 
-        this.estacionamentoRepository.insert(estacionamentoAberto);
+        this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
@@ -601,7 +599,18 @@ public class EstacionamentoControllerTest {
         List<String> erros = documentContext.read("$.erros");
         assertThat(erros).isNull();
 
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+
     }
+
+
 
 
 }
