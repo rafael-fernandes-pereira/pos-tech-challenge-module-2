@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-public class EstacionamentoControllerTest {
+public class EstacionamentoAbertoControllerTest {
 
     @Container //
     private static MongoDBContainer mongoDBContainer = MongoContainers.getDefaultContainer();
@@ -86,7 +86,7 @@ public class EstacionamentoControllerTest {
     }
 
     @Test
-    void deveRetornarEstacionamento(){
+    void deveRetornarEstacionamentoAberto(){
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
@@ -94,7 +94,7 @@ public class EstacionamentoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/aberto",
                         String.class
                 );
 
@@ -139,7 +139,7 @@ public class EstacionamentoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ UUID.randomUUID() + "/AABBCCD",
+                        "/estacionamento/"+ UUID.randomUUID() + "/AABBCCD" + "/aberto",
                         String.class
                 );
 
@@ -165,7 +165,7 @@ public class EstacionamentoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/AABBCCD",
+                        "/estacionamento/"+ clienteCarro.cliente().id() + "/AABBCCD" + "/aberto",
                         String.class
                 );
 
@@ -572,25 +572,25 @@ public class EstacionamentoControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
 
-        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.recibo.inicio"));
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.inicio"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.recibo.fim"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.fim"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.recibo.horas_solicitadas");
+        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.horas_solicitadas");
         assertThat(horasSolicitadas).isEqualTo(2);
 
-        Double valor = documentContext.read("$.recibo.valor");
+        Double valor = documentContext.read("$.estacionamentos[0].recibo.valor");
         assertThat(valor).isEqualTo(14.0);
 
-        Integer tempoAMais = documentContext.read("$.recibo.tempo_a_mais");
+        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.tempo_a_mais");
         assertThat(tempoAMais).isEqualTo(0L);
 
-        Double multa = documentContext.read("$.recibo.multa");
+        Double multa = documentContext.read("$.estacionamentos[0].recibo.multa");
         assertThat(multa).isEqualTo(0);
 
-        Double valorFinal = documentContext.read("$.recibo.valor_final");
+        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.valor_final");
         assertThat(valorFinal).isEqualTo(14.0);
 
         Integer httpStatusCode = documentContext.read("$.http_status_code");
@@ -598,6 +598,16 @@ public class EstacionamentoControllerTest {
 
         List<String> erros = documentContext.read("$.erros");
         assertThat(erros).isNull();
+
+        URI location = finalizarResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> responseFinalizado = this.restTemplate
+                .getForEntity(
+                        location,
+                        String.class
+                );
+
+        assertThat(responseFinalizado.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(

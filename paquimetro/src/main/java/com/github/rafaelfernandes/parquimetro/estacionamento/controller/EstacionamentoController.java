@@ -1,27 +1,17 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.controller;
 
-import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Estacionamento;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.MessageEstacionamento;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.MessageFinalizado;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Recibo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.dto.MessageEstacionamentoDTO;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.MessageEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -30,10 +20,10 @@ public class EstacionamentoController {
 
     @Autowired private EstacionamentoService estacionamentoService;
 
-    @GetMapping("/{requestId}/{carro}")
-    ResponseEntity<MessageEstacionamento> obterDados(@PathVariable UUID requestId, @PathVariable String carro){
+    @GetMapping("/{requestId}/{carro}/aberto")
+    ResponseEntity<MessageAberto> obterDadosEmAberto(@PathVariable UUID requestId, @PathVariable String carro){
 
-        MessageEstacionamento estacionamento = this.estacionamentoService.obterAbertoPorCarro(requestId, carro);
+        MessageAberto estacionamento = this.estacionamentoService.obterAbertoPorCarro(requestId, carro);
 
         return ResponseEntity
                 .status(estacionamento.http_status_code())
@@ -42,52 +32,72 @@ public class EstacionamentoController {
     }
 
     @PostMapping("/{requestId}/{carro}/fixo")
-    ResponseEntity<MessageEstacionamento> registrarFixo(@PathVariable UUID requestId,
-                                                        @PathVariable String carro,
-                                                        @RequestBody Fixo fixo,
-                                                        UriComponentsBuilder uriComponentsBuilder){
+    ResponseEntity<MessageAberto> registrarFixo(@PathVariable UUID requestId,
+                                                @PathVariable String carro,
+                                                @RequestBody Fixo fixo,
+                                                UriComponentsBuilder uriComponentsBuilder){
 
-        MessageEstacionamento messageEstacionamento = this.estacionamentoService.registrar(TipoPeriodo.FIXO, requestId, carro, fixo.duracao_fixa());
+        MessageAberto messageAberto = this.estacionamentoService.registrar(TipoPeriodo.FIXO, requestId, carro, fixo.duracao_fixa());
 
         URI location = uriComponentsBuilder
-                .path("estacionamento/{requestId}/{carro}")
+                .path("estacionamento/{requestId}/{carro}/aberto")
                 .buildAndExpand(requestId, carro)
                 .toUri();
 
         return ResponseEntity
-                .status(messageEstacionamento.http_status_code())
+                .status(messageAberto.http_status_code())
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(messageEstacionamento);
+                .body(messageAberto);
     }
 
     @PostMapping("/{requestId}/{carro}/hora")
-    ResponseEntity<MessageEstacionamento> registrarHora(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
+    ResponseEntity<MessageAberto> registrarHora(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
 
-        MessageEstacionamento messageEstacionamento = this.estacionamentoService.registrar(TipoPeriodo.HORA, requestId, carro, null);
+        MessageAberto messageAberto = this.estacionamentoService.registrar(TipoPeriodo.HORA, requestId, carro, null);
 
         URI location = uriComponentsBuilder
-                .path("estacionamento/{requestId}/{carro}")
+                .path("estacionamento/{requestId}/{carro}/aberto")
                 .buildAndExpand(requestId, carro)
                 .toUri();
 
         return ResponseEntity
-                .status(messageEstacionamento.http_status_code())
+                .status(messageAberto.http_status_code())
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(messageEstacionamento);
+                .body(messageAberto);
     }
 
     @PostMapping("/{requestId}/{carro}/finalizar")
-    ResponseEntity<MessageFinalizado> finalizar(@PathVariable UUID requestId, @PathVariable String carro){
+    ResponseEntity<MessageEncerrado> finalizar(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
 
+        MessageEncerrado messageEncerrado = this.estacionamentoService.finalizar(requestId, carro);
 
-        MessageFinalizado messageFinalizado = this.estacionamentoService.finalizar(requestId, carro);
+        UUID encerradoId = messageEncerrado.estacionamentos().get(0).id();
+
+        URI location = uriComponentsBuilder
+                .path("estacionamento/{requestId}/encerrado")
+                .buildAndExpand(encerradoId)
+                .toUri();
 
         return ResponseEntity
-                .status(messageFinalizado.http_status_code())
-                .body(messageFinalizado);
+                .status(messageEncerrado.http_status_code())
+                .header(HttpHeaders.LOCATION, location.toASCIIString())
+                .body(messageEncerrado);
 
 
     }
+
+    @GetMapping("/{requestId}/encerrado")
+    ResponseEntity<MessageEncerrado> obterDadosEncerrado(@PathVariable UUID requestId){
+
+        MessageEncerrado estacionamento = this.estacionamentoService.obterEncerrado(requestId);
+
+        return ResponseEntity
+                .status(estacionamento.http_status_code())
+                .body(estacionamento);
+
+    }
+
+
 
 
 

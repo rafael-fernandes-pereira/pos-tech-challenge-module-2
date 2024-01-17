@@ -1,15 +1,12 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.entity;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ContatoEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Estacionamento;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.Recibo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.EstacionamentoAberto;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Recibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Document("estacionamento_encerrado")
@@ -24,19 +21,19 @@ public record EstacionamentoEncerradoEntity(
         Integer duracaoFixa,
         Recibo recibo
 ) {
-        public static EstacionamentoEncerradoEntity from (Estacionamento estacionamento, Recibo recibo){
+        public static EstacionamentoEncerradoEntity from (EstacionamentoAberto estacionamentoAberto, Recibo recibo){
                 return new EstacionamentoEncerradoEntity(
                         UUID.randomUUID(),
-                        estacionamento.cliente_id(),
-                        estacionamento.carro(),
-                        estacionamento.nome(),
+                        estacionamentoAberto.cliente_id(),
+                        estacionamentoAberto.carro(),
+                        estacionamentoAberto.nome(),
                         new ContatoEntity(
-                                estacionamento.contato().email(),
-                                estacionamento.contato().celular()
+                                estacionamentoAberto.contato().email(),
+                                estacionamentoAberto.contato().celular()
                         ),
-                        estacionamento.forma_pagamento(),
-                        estacionamento.tipo_periodo(),
-                        estacionamento.duracao_fixa(),
+                        estacionamentoAberto.forma_pagamento(),
+                        estacionamentoAberto.tipo_periodo(),
+                        estacionamentoAberto.duracao_fixa(),
                         recibo
                 );
         }
