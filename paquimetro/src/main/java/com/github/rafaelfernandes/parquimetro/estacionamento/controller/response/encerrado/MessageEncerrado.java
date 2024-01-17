@@ -16,7 +16,7 @@ public record MessageEncerrado(
     public static MessageEncerrado success(HttpStatus httpStatus, EstacionamentoEncerrado estacionamentoEncerrado){
         var estacionamentos = new ArrayList<EstacionamentoEncerrado>();
         estacionamentos.add(estacionamentoEncerrado);
-        return new MessageEncerrado(estacionamentos, httpStatus.value(), null);
+        return new MessageEncerrado(estacionamentos, httpStatus.value(), new ArrayList<>());
     }
 
     public static MessageEncerrado error(HttpStatus httpStatus, String erro){

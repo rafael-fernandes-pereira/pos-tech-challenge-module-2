@@ -597,7 +597,7 @@ public class EstacionamentoAbertoControllerTest {
         assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
 
         List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isNull();
+        assertThat(erros).isEmpty();
 
         URI location = finalizarResponse.getHeaders().getLocation();
 
@@ -679,7 +679,7 @@ public class EstacionamentoAbertoControllerTest {
         assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
 
         List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isNull();
+        assertThat(erros).isEmpty();
 
         URI location = finalizarResponse.getHeaders().getLocation();
 
@@ -760,7 +760,7 @@ public class EstacionamentoAbertoControllerTest {
         assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
 
         List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isNull();
+        assertThat(erros).isEmpty();
 
         URI location = finalizarResponse.getHeaders().getLocation();
 
@@ -782,7 +782,76 @@ public class EstacionamentoAbertoControllerTest {
 
     }
 
+    @Test
+    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarFinalizar(){
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + UUID.randomUUID() + "/AABBCCD/finalizar",
+                        null,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+
+        ;
+
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoPlacaNaoExisteAoTentarFinalizar(){
+
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/AABBCCD/finalizar",
+                        null,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não cadastrado para esse cliente"))
+        ;
 
 
 
+    }
+
+    @Test
+    void deveRetornarNotFoundQuandoNaoExisteEstacionamentoAberto(){
+
+        ClienteCarro clienteCarro = cadastrarNovoCliente();
+
+        ResponseEntity<String> createResponse = this.restTemplate
+                .postForEntity(
+                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() +"/finalizar",
+                        null,
+                        String.class
+                );
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+
+        ArrayList<String> erros = documentContext.read("$.erros");
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Registro de estacionamento não encontrado"))
+        ;
+
+    }
 }

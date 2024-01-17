@@ -71,6 +71,12 @@ public class EstacionamentoController {
 
         MessageEncerrado messageEncerrado = this.estacionamentoService.finalizar(requestId, carro);
 
+        if (!messageEncerrado.erros().isEmpty()) {
+            return ResponseEntity
+                    .status(messageEncerrado.http_status_code())
+                    .body(messageEncerrado);
+        }
+
         UUID encerradoId = messageEncerrado.estacionamentos().get(0).id();
 
         URI location = uriComponentsBuilder
