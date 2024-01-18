@@ -1,7 +1,5 @@
 package com.github.rafaelfernandes.parquimetro.cliente.service;
 
-import com.github.rafaelfernandes.parquimetro.cliente.dto.MessageDTO;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CarEmptyAfterDeleteException;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CarEmptyException;
