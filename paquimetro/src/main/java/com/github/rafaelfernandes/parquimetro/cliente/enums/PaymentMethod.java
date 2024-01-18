@@ -15,7 +15,7 @@ public enum PaymentMethod {
         this.descricao = descricao;
     }
 
-    public static PaymentMethod obterPorNome(String descricao) {
+    public static PaymentMethod getByName(String descricao) {
         for (PaymentMethod paymentMethod : values()) {
             if (paymentMethod.name().equalsIgnoreCase(descricao)) {
                 return paymentMethod;

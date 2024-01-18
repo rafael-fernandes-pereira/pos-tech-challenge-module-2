@@ -54,4 +54,13 @@ public class CustomerExceptionHandler {
                 .body(new CustomerError(exception.getErrors()));
     }
 
+    @ExceptionHandler({PaymentMethodNull.class})
+    public ResponseEntity<CustomerError> paymentMethodNull(PaymentMethodNull exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new CustomerError(exception.getErrors()));
+    }
+
+
+
 }

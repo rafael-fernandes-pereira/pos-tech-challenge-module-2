@@ -17,7 +17,7 @@ public record CustomerEntity(
         @Indexed(unique = true)
         Long document,
         AddressEntity address,
-        PaymentMethod payment_method,
+        PaymentMethod paymentMethod,
         ContactEntity contact,
         List<String> cars
 ) {
@@ -56,7 +56,7 @@ public record CustomerEntity(
                         customerEntity.name(),
                         customerEntity.document(),
                         customerEntity.address(),
-                        customerEntity.payment_method(),
+                        customerEntity.paymentMethod(),
                         customerEntity.contact(),
                         cars.stream().toList()
                 );

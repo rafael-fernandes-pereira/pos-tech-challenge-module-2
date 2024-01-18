@@ -40,15 +40,4 @@ public class ClienteDto {
     }
 
 
-
-
-    public static List<Customer> getListFrom(CustomerEntity cliente){
-
-        ArrayList<Customer> customers = new ArrayList<>();
-        customers.add(Customer.from(cliente));
-
-        return customers;
-
-    }
-
 }

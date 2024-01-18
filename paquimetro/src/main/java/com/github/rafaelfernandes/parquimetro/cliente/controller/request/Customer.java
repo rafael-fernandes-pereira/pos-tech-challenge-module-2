@@ -20,7 +20,7 @@ public record Customer(
         Long document,
         @NotNull(message = "O campo address deve estar preenchido")
         Address address,
-        @NotNull(message = "O campo payment_method deve estar preenchido")
+        @NotNull(message = "O campo paymentMethod deve estar preenchido")
         PaymentMethod payment_method,
         @NotNull(message = "O campo contact deve estar preenchido")
         Contact contact,
@@ -51,7 +51,7 @@ public record Customer(
                         cliente.name(),
                         cliente.document(),
                         address,
-                        cliente.payment_method(),
+                        cliente.paymentMethod(),
                         contact,
                         cliente.cars()
                 );

@@ -50,7 +50,7 @@ public class ValidationTest {
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo name deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo document deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo address deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo payment_method deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo paymentMethod deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo cars deve ter pelo menos uma placa"))
         ;

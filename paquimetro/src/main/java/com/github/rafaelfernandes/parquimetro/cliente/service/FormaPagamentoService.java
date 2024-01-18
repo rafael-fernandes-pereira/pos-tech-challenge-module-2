@@ -1,12 +1,11 @@
 package com.github.rafaelfernandes.parquimetro.cliente.service;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageFormaPagamento;
-import com.github.rafaelfernandes.parquimetro.cliente.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerNotFoundException;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.PaymentMethodNull;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -17,43 +16,35 @@ public class FormaPagamentoService {
 
     @Autowired private CustomerRepository repository;
 
-    public MessageFormaPagamento alterar(UUID requestId, String formaPagamentoStr){
+    public void change(UUID customerId, String paymenteMethodStr){
 
-        PaymentMethod paymentMethod = PaymentMethod.obterPorNome(formaPagamentoStr);
+        PaymentMethod paymentMethod = PaymentMethod.getByName(paymenteMethodStr);
 
-        if (paymentMethod == null){
-            return MessageDTO.formaPagamentoError(HttpStatus.BAD_REQUEST, null);
-        }
+        if (paymentMethod == null) throw new PaymentMethodNull();
 
+        Optional<CustomerEntity> customer = this.repository.findById(customerId);
 
-        Optional<CustomerEntity> cliente = this.repository.findById(requestId);
-
-        if (cliente.isEmpty()) {
-            return MessageDTO.formaPagamentoError(HttpStatus.NOT_FOUND, null);
-        }
+        if (customer.isEmpty()) throw new CustomerNotFoundException();
 
         CustomerEntity customerEntity = new CustomerEntity(
-                requestId,
-                cliente.get().name(),
-                cliente.get().document(),
-                cliente.get().address(),
+                customer.get().id(),
+                customer.get().name(),
+                customer.get().document(),
+                customer.get().address(),
                 paymentMethod,
-                cliente.get().contact(),
-                cliente.get().cars()
+                customer.get().contact(),
+                customer.get().cars()
         );
 
         this.repository.save(customerEntity);
-
-        return MessageDTO.formaPagamentoSuccess(HttpStatus.NO_CONTENT, null);
-
     }
 
+    public PaymentMethod get(UUID customerId) {
+        Optional<CustomerEntity> customerEntity = this.repository.findById(customerId);
 
-    public MessageFormaPagamento obter(UUID requestId) {
-        Optional<CustomerEntity> cliente = this.repository.findById(requestId);
-
-        return cliente
-                .map(clienteEntity -> MessageDTO.formaPagamentoSuccess(HttpStatus.OK, clienteEntity.payment_method()))
-                .orElseGet(() -> MessageDTO.formaPagamentoError(HttpStatus.NOT_FOUND, null));
+        return customerEntity
+                .map(CustomerEntity::paymentMethod)
+                .orElseThrow(CustomerNotFoundException::new)
+        ;
     }
 }

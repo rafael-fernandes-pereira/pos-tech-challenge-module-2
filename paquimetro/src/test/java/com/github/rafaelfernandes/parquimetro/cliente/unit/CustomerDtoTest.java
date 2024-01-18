@@ -27,7 +27,7 @@ public class CustomerDtoTest {
         assertThat(customer.address().city()).isEqualTo(entity.address().city());
         assertThat(customer.address().state()).isEqualTo(entity.address().state());
 
-        assertThat(customer.payment_method()).isEqualTo(entity.payment_method());
+        assertThat(customer.payment_method()).isEqualTo(entity.paymentMethod());
 
 
 

@@ -116,7 +116,7 @@ public class CustomerControllerTest {
         assertEquals(clienteSalvo.address().state(), estado);
 
         String formaPagamento = documentContext.read("$.payment_method");
-        assertEquals(clienteSalvo.payment_method().toString(), formaPagamento);
+        assertEquals(clienteSalvo.paymentMethod().toString(), formaPagamento);
 
         String email = documentContext.read("$.contact.email");
         assertEquals(clienteSalvo.contact().email(), email);
@@ -211,7 +211,7 @@ public class CustomerControllerTest {
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo name deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo document deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo address deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo payment_method deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo paymentMethod deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact deve estar preenchido"))
                 .anyMatch(erro -> erro.equalsIgnoreCase("O campo cars deve ter pelo menos uma placa"))
         ;
@@ -873,28 +873,29 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveAlterarFormaDePagamento(){
+    @DisplayName("PUT /customers/customerId/paymentMethod -> Should Change Payment Method")
+    void shouldChangePaymentMethod(){
 
         CustomerEntity customerEntity = createNewCustomer();
 
         PaymentMethod[] paymentMethods = PaymentMethod.values();
 
-        PaymentMethod novaPaymentMethod = null;
+        PaymentMethod paymentMethodNew = null;
 
         for (PaymentMethod paymentMethod : paymentMethods){
 
-            if (paymentMethod.equals(customerEntity.payment_method()))
+            if (paymentMethod.equals(customerEntity.paymentMethod()))
                 continue;
 
-            novaPaymentMethod = paymentMethod;
+            paymentMethodNew = paymentMethod;
             break;
         }
 
-        HttpEntity<String> request = new HttpEntity<>(novaPaymentMethod.name());
+        HttpEntity<String> request = new HttpEntity<>(paymentMethodNew.name());
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/customers/" + customerEntity.id() + "/formaPagamento",
+                        "/customers/" + customerEntity.id() + "/paymentMethod",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -913,57 +914,76 @@ public class CustomerControllerTest {
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
         String formaPagamentoAlterado = documentContext.read("$.payment_method");
-        assertThat(novaPaymentMethod.name()).isEqualTo(formaPagamentoAlterado);
+        assertThat(paymentMethodNew.name()).isEqualTo(formaPagamentoAlterado);
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExiste(){
+    @DisplayName("PUT /customers/customerId/paymentMethod -> Should Return Not Found When Change Payment Method And Customer Not Exists")
+    void shouldReturnNotFoundWhenChangePaymentMethodAndCustomerNotExists(){
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
 
         HttpEntity<String> request = new HttpEntity<>(PaymentMethod.PIX.name());
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> responseUpdate = restTemplate
                 .exchange(
-                        "/customers/" + customer.id() + "/formaPagamento",
+                        "/customers/" + customer.id() + "/paymentMethod",
                         HttpMethod.PUT,
                         request,
-                        Void.class
+                        String.class
                 );
 
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
+        DocumentContext documentContext = JsonPath.parse(responseUpdate.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+        ;
+
     }
 
 
     @Test
-    void deveRetornarBadRequestQuandoClienteNaoExiste(){
+    @DisplayName("PUT /customers/customerId/paymentMethod -> Should Return Bad Request When Send Method Not Allowed")
+    void shouldReturnBadRequestWhenSendMethodNotAllowed(){
 
-        CustomerEntity cliente = createNewCustomer();
+        CustomerEntity customer = createNewCustomer();
         HttpEntity<String> request = new HttpEntity<>("DOC_TED");
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> responseUpdate = restTemplate
                 .exchange(
-                        "/customers/" + cliente.id() + "/formaPagamento",
+                        "/customers/" + customer.id() + "/paymentMethod",
                         HttpMethod.PUT,
                         request,
-                        Void.class
+                        String.class
                 );
 
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
+        DocumentContext documentContext = JsonPath.parse(responseUpdate.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Metodo de pagamento não aceito!"))
+        ;
+
     }
 
     @Test
+    @DisplayName("GET /customers/customerId/paymentMethod -> Should Return Payment Method")
     void deveObterFormaPagamento(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        CustomerEntity customerSaved = createNewCustomer();
 
-        PaymentMethod paymentMethod = clienteSalvo.payment_method();
+        PaymentMethod paymentMethod = customerSaved.paymentMethod();
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/customers/" + clienteSalvo.id() + "/formaPagamento",
+                        "/customers/" + customerSaved.id() + "/paymentMethod",
                         String.class
                 );
 
@@ -971,23 +991,33 @@ public class CustomerControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        String formaPagamentoCliente =  documentContext.read("$.payment_method");
+        String formaPagamentoCliente =  documentContext.read("$");
 
         assertThat(formaPagamentoCliente).isEqualTo(paymentMethod.name());
 
     }
 
     @Test
-    void deveRetornarNotFoundQuandoTentarObterFormaPagamentoDEClienteNaoExistente(){
+    @DisplayName("GET /customers/customerId/paymentMethod -> Should Return Not Found When Return Payment Method of Customer Not Exists")
+    void shouldReturnNotFoundWhenReturnPaymentMethodOfCustomerNotExists(){
         Customer customer = GenerateData.customer(Boolean.FALSE);
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/customers/" + customer.id() + "/formaPagamento",
+                        "/customers/" + customer.id() + "/paymentMethod",
                         String.class
                 );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+        ;
+
     }
 
 }

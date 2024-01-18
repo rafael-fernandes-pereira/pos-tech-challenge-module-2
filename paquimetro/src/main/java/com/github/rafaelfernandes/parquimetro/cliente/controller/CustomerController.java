@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.cliente.controller;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageFormaPagamento;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CarService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
@@ -110,30 +110,24 @@ public class CustomerController {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
-
     }
 
-    @PutMapping("/{requestId}/formaPagamento")
-    ResponseEntity<MessageFormaPagamento> alterarFormaPagamento(@PathVariable UUID requestId, @RequestBody String formaPagamento){
+    @PutMapping("/{customerId}/paymentMethod")
+    ResponseEntity<Void> changePaymentMethod(@PathVariable UUID customerId, @RequestBody String paymentMethod){
 
-        MessageFormaPagamento messageFormaPagamento = this.formaPagamentoService.alterar(requestId, formaPagamento);
+        this.formaPagamentoService.change(customerId, paymentMethod);
 
         return ResponseEntity
-                .status(messageFormaPagamento.httpStatusCode())
-                .body(messageFormaPagamento);
-
-
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
-    @GetMapping("/{requestId}/formaPagamento")
-    ResponseEntity<MessageFormaPagamento> obterFormaPagamento(@PathVariable UUID requestId){
-
-        MessageFormaPagamento messageFormaPagamento = this.formaPagamentoService.obter(requestId);
+    @GetMapping("/{customerId}/paymentMethod")
+    ResponseEntity<PaymentMethod> getPaymentMethod(@PathVariable UUID customerId){
 
         return ResponseEntity
-                .status(messageFormaPagamento.httpStatusCode())
-                .body(messageFormaPagamento);
-
+                .status(HttpStatus.OK)
+                .body(this.formaPagamentoService.get(customerId));
     }
 
 }

@@ -355,7 +355,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -382,7 +382,7 @@ public class EstacionamentoAbertoControllerTest {
     void deveRetornarBadRequestQuandoTipoPeriodoIgualHoraEPgamentoPix(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.PIX.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.PIX.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -460,7 +460,7 @@ public class EstacionamentoAbertoControllerTest {
     void deveRetonarDuplicidadeQUandoTentaRegistrarTempoHoraEUmaMesmaPlaca(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -496,7 +496,7 @@ public class EstacionamentoAbertoControllerTest {
     void deveRetonarDuracaoNulaQuandoRegistraHora(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         Fixo fixo = new Fixo(0);
 
@@ -544,7 +544,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
                 UUID.randomUUID(),
@@ -626,7 +626,7 @@ public class EstacionamentoAbertoControllerTest {
     void deveFinalizar2HorasComMulta(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
                 UUID.randomUUID(),
@@ -707,7 +707,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.formaPagamentoService.change(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
                 UUID.randomUUID(),
