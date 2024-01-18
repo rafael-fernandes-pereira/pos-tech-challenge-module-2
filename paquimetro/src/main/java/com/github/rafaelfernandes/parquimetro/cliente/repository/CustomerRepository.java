@@ -6,5 +6,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;
 
-public interface ClienteRepository extends MongoRepository<CustomerEntity, UUID>, PagingAndSortingRepository<CustomerEntity, UUID> {
+public interface CustomerRepository extends MongoRepository<CustomerEntity, UUID>, PagingAndSortingRepository<CustomerEntity, UUID> {
 }

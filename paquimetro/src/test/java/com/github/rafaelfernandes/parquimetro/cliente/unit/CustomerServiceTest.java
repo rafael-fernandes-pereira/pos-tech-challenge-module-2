@@ -6,7 +6,7 @@ import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicat
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
-import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ public class CustomerServiceTest {
         registry.add("spring.data.mongodb.auto-index-creation", MongoContainers::getTrue);
     }
 
-    @Autowired private ClienteRepository repository;
+    @Autowired private CustomerRepository repository;
     @Autowired private CustomerService service;
 
     @Test

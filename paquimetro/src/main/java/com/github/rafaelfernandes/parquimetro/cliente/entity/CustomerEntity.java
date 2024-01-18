@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Document("customer")
@@ -46,6 +47,18 @@ public record CustomerEntity(
                         customer.payment_method(),
                         contactEntity,
                         customer.cars()
+                );
+        }
+
+        public static CustomerEntity updateCars(CustomerEntity customerEntity, Set<String> cars){
+                return new CustomerEntity(
+                        customerEntity.id(),
+                        customerEntity.name(),
+                        customerEntity.document(),
+                        customerEntity.address(),
+                        customerEntity.payment_method(),
+                        customerEntity.contact(),
+                        cars.stream().toList()
                 );
         }
 }

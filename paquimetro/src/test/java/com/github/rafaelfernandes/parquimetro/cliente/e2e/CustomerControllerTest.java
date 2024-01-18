@@ -7,7 +7,7 @@ import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.State;
-import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -31,6 +31,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,7 +56,7 @@ public class CustomerControllerTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private ClienteRepository repository;
+    private CustomerRepository repository;
 
     @BeforeEach
     void setup(){
@@ -573,36 +575,45 @@ public class CustomerControllerTest {
     @DisplayName("Should Return Not Found When Trying Delete Customer Not Exists")
     void shouldReturnNotFoundWhenTryingDeleteCustomerNotExists() {
 
-        String naoExisteId = faker.internet().uuid();
+        String customerNotExistsId = faker.internet().uuid();
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> response = restTemplate
                 .exchange(
-                        "/customers/" + naoExisteId,
+                        "/customers/" + customerNotExistsId,
                         HttpMethod.DELETE,
                         null,
-                        Void.class
+                        String.class
                 );
 
-        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+        ;
 
     }
 
     @Test
-    void deveAdicionarCarro(){
+    @DisplayName("Should Add New Car In Customer")
+    void shouldAddNewCarInCustomer(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        CustomerEntity newCustomer = createNewCustomer();
 
-        String placa = GenerateData.placa();
+        String car = GenerateData.placa();
 
-        List<String> carros = new ArrayList<>();
+        List<String> cars = new ArrayList<>();
 
-        carros.add(placa);
+        cars.add(car);
 
-        HttpEntity<List<String>> request = new HttpEntity<>(carros);
+        HttpEntity<List<String>> request = new HttpEntity<>(cars);
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/customers/" + clienteSalvo.id() + "/cars",
+                        "/customers/" + newCustomer.id() + "/cars",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -610,13 +621,13 @@ public class CustomerControllerTest {
 
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        List<String> todosCarros = new ArrayList<>();
-        todosCarros.addAll(clienteSalvo.cars());
-        todosCarros.addAll(carros);
+        List<String> allCars = new ArrayList<>();
+        allCars.addAll(newCustomer.cars());
+        allCars.addAll(cars);
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/customers/" + clienteSalvo.id(),
+                        "/customers/" + newCustomer.id(),
                         String.class
                 );
 
@@ -625,29 +636,38 @@ public class CustomerControllerTest {
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
         String id = documentContext.read("$.id");
-        List<String> carrosSalvos =  documentContext.read("$.cars");
+        List<String> savedCars =  documentContext.read("$.cars");
 
-        assertThat(id).isEqualTo(clienteSalvo.id().toString());
-        assertTrue(CollectionUtils.isEqualCollection(carrosSalvos, todosCarros));
+        assertThat(id).isEqualTo(newCustomer.id().toString());
+        assertTrue(CollectionUtils.isEqualCollection(savedCars, allCars));
 
     }
 
     @Test
-    void deveRetornarBadRequestQuandoNaoEnviaCarros(){
+    @DisplayName("Should Return Bad Request When Add Car Empty")
+    void shouldReturnBadRequestWhenAddCarEmpty(){
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
 
         HttpEntity<List<String>> request = new HttpEntity<>(new ArrayList<>());
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> response = restTemplate
                 .exchange(
                         "/customers/" + customer.id() + "/cars",
                         HttpMethod.PUT,
                         request,
-                        Void.class
+                        String.class
                 );
 
-        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Deve enviar pelo menos um carro!"))
+        ;
 
     }
 
@@ -656,30 +676,39 @@ public class CustomerControllerTest {
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
 
-        List<String> carros = GenerateData.placas();
+        List<String> cars = GenerateData.placas();
 
-        HttpEntity<List<String>> request = new HttpEntity<>(carros);
+        HttpEntity<List<String>> request = new HttpEntity<>(cars);
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> responseUpdate = restTemplate
                 .exchange(
                         "/customers/" + customer.id() + "/cars",
                         HttpMethod.PUT,
                         request,
-                        Void.class
+                        String.class
                 );
 
         assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
+        DocumentContext documentContext = JsonPath.parse(responseUpdate.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+        ;
+
     }
 
     @Test
-    void deveRetornarCarros(){
+    @DisplayName("Should Return All Cars From Customer")
+    void shouldReturnAllCarsFromCustomer(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        CustomerEntity customerSaved = createNewCustomer();
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/customers/" + clienteSalvo.id() + "/cars",
+                        "/customers/" + customerSaved.id() + "/cars",
                         String.class
                 );
 
@@ -687,14 +716,15 @@ public class CustomerControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        List<String> carros =  documentContext.read("$.cars");
+        List<String> carros =  documentContext.read("$.*");
 
-        assertTrue(CollectionUtils.isEqualCollection(carros, clienteSalvo.cars()));
+        assertTrue(CollectionUtils.isEqualCollection(carros, customerSaved.cars()));
 
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarObter(){
+    @DisplayName("Should Return Customer Not Found When Get Cars From Customer Not Exists")
+    void shouldReturnCustomerNotFoundWhenGetCarsFromCustomerNotExists(){
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
 
@@ -706,18 +736,27 @@ public class CustomerControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+        ;
+
     }
 
     @Test
-    void deveDeletarCarro(){
+    @DisplayName("DELETE /customers/customerId/car -> OK")
+    void shouldDeleteCar(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        CustomerEntity customerSaved = createNewCustomer();
 
-        String carro = clienteSalvo.cars().get(0);
+        String carro = customerSaved.cars().get(0);
 
         ResponseEntity<Void> deleteResponse = restTemplate
                 .exchange(
-                        "/customers/" + clienteSalvo.id() + "/" + carro,
+                        "/customers/" + customerSaved.id() + "/" + carro,
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -727,7 +766,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/customers/" + clienteSalvo.id() + "/cars" ,
+                        "/customers/" + customerSaved.id() + "/cars" ,
                         String.class
                 );
 
@@ -735,49 +774,101 @@ public class CustomerControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        List<String> carros =  documentContext.read("$.cars");
+        List<String> carros =  documentContext.read("$.*");
 
         assertFalse(carros.contains(carro));
 
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarExluir(){
+    @DisplayName("DELETE /customers/customerId/car -> Should Return Not Found When Customer Not Exists")
+    void shouldReturnNotFoundWhenDeleteCarOfCustomerNotExists(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
         String carro = "AABBCCD";
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> response = restTemplate
                 .exchange(
-                        "/customers/" + clienteSalvo.id() + "/" + carro,
+                        "/customers/" + customer.id() + "/" + carro,
                         HttpMethod.DELETE,
                         null,
-                        Void.class
+                        String.class
                 );
 
-        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
+        ;
 
     }
 
 
 
     @Test
-    void deveRetornarNotFoundQuandoCarroNaoExisteAoTentarExluir(){
+    @DisplayName("DELETE /customers/customerId/car -> Should Return Not Found When Car Not Exists In Customer")
+    void shouldReturnNotFoundWhenCarNotExistsInCustomer(){
 
-        Customer customer = GenerateData.customer(Boolean.FALSE);
+        CustomerEntity customerSaved = createNewCustomer();
 
         String carro = GenerateData.placa();
 
-        ResponseEntity<Void> responseUpdate = restTemplate
+        ResponseEntity<String> response = restTemplate
                 .exchange(
-                        "/customers/" + customer.id() + "/" + carro,
+                        "/customers/" + customerSaved.id() + "/" + carro,
                         HttpMethod.DELETE,
                         null,
-                        Void.class
+                        String.class
                 );
 
-        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não existe para esse cliente"))
+        ;
+
+    }
+
+    @Test
+    @DisplayName("DELETE /customers/customerId/car -> Should Return Bad Request When Delete On Last Car")
+    void shouldBadRequestWhenDeleteOnLastCar(){
+
+        CustomerEntity customerSaved = createNewCustomer();
+
+        String car = customerSaved.cars().get(0);
+
+        Set<String> newCars = new TreeSet<>();
+        newCars.add(car);
+        CustomerEntity customerToSave = CustomerEntity.updateCars(customerSaved, newCars);
+
+        this.repository.save(customerToSave);
+
+        ResponseEntity<String> response = restTemplate
+                .exchange(
+                        "/customers/" + customerSaved.id() + "/" + car,
+                        HttpMethod.DELETE,
+                        null,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Não é possível deletar o único carro do customer. Adicione outro e, depois, delete este."))
+        ;
 
     }
 

@@ -4,7 +4,7 @@ import com.github.rafaelfernandes.parquimetro.cliente.controller.response.Messag
 import com.github.rafaelfernandes.parquimetro.cliente.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
-import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Component
 public class FormaPagamentoService {
 
-    @Autowired private ClienteRepository repository;
+    @Autowired private CustomerRepository repository;
 
     public MessageFormaPagamento alterar(UUID requestId, String formaPagamentoStr){
 

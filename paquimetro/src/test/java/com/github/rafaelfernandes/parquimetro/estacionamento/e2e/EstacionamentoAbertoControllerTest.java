@@ -5,7 +5,7 @@ import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
-import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
@@ -57,7 +57,7 @@ public class EstacionamentoAbertoControllerTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private CustomerRepository customerRepository;
 
     @Autowired
     private FormaPagamentoService formaPagamentoService;
@@ -70,7 +70,7 @@ public class EstacionamentoAbertoControllerTest {
 
     @BeforeEach
     void setup(){
-        clienteRepository.deleteAll();
+        customerRepository.deleteAll();
         estacionamentoAbertoRepository.deleteAll();
     }
 
@@ -79,7 +79,7 @@ public class EstacionamentoAbertoControllerTest {
         Customer customer = GenerateData.customer(Boolean.TRUE);
         CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
-        CustomerEntity clienteSalvoEntity = clienteRepository.save(customerEntity);
+        CustomerEntity clienteSalvoEntity = customerRepository.save(customerEntity);
 
         Customer customerSalvo = Customer.from(clienteSalvoEntity);
 

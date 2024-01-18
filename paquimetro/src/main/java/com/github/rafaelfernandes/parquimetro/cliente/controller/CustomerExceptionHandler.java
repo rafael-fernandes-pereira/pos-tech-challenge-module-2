@@ -1,9 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.cliente.controller;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.CustomerError;
-import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
-import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerNotFoundException;
-import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerValidationException;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +32,26 @@ public class CustomerExceptionHandler {
                 .body(new CustomerError(exception.getErrors()));
     }
 
+    @ExceptionHandler({CarEmptyException.class})
+    public ResponseEntity<CustomerError> carEmpty(CarEmptyException exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new CustomerError(exception.getErrors()));
+    }
 
+    @ExceptionHandler({CarNotFoundException.class})
+    public ResponseEntity<CustomerError> customerCarNotFound(CarNotFoundException exception){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new CustomerError(exception.getErrors()));
+    }
+
+
+    @ExceptionHandler({CarEmptyAfterDeleteException.class})
+    public ResponseEntity<CustomerError> carEmptyAfterDelete(CarEmptyAfterDeleteException exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new CustomerError(exception.getErrors()));
+    }
 
 }

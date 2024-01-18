@@ -2,7 +2,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.controller;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageFormaPagamento;
-import com.github.rafaelfernandes.parquimetro.cliente.service.CarroService;
+import com.github.rafaelfernandes.parquimetro.cliente.service.CarService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
@@ -24,7 +24,7 @@ import java.util.UUID;
 public class CustomerController {
 
     @Autowired private CustomerService customerService;
-    @Autowired private CarroService carroService;
+    @Autowired private CarService carService;
 
     @Autowired private FormaPagamentoService formaPagamentoService;
 
@@ -84,35 +84,33 @@ public class CustomerController {
 
     }
 
-    @PutMapping("/{requestId}/cars")
-    ResponseEntity<MessageCarros> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
+    @PutMapping("/{customerId}/cars")
+    ResponseEntity<Void> addCar(@PathVariable UUID customerId, @RequestBody List<String> cars){
 
-        MessageCarros messageCarros = this.carroService.incluir(requestId, carros);
+        this.carService.addCars(customerId, cars);
 
         return ResponseEntity
-                .status(messageCarros.httpStatusCode())
-                .body(messageCarros);
+                .status(HttpStatus.NO_CONTENT)
+                .build();
 
     }
 
-    @GetMapping("/{requestId}/cars")
-    ResponseEntity<MessageCarros> obterCarros(@PathVariable UUID requestId){
-
-        MessageCarros messageCarros = this.carroService.obter(requestId);
+    @GetMapping("/{customerId}/cars")
+    ResponseEntity<List<String>> getCars(@PathVariable UUID customerId){
 
         return ResponseEntity
-                .status(messageCarros.httpStatusCode())
-                .body(messageCarros);
+                .status(HttpStatus.OK)
+                .body(this.carService.getCars(customerId));
     }
 
-    @DeleteMapping("/{requestId}/{carro}")
-    ResponseEntity<MessageCarros> excluirCarros(@PathVariable UUID requestId, @PathVariable String carro){
+    @DeleteMapping("/{customerId}/{car}")
+    ResponseEntity<Void> delete(@PathVariable UUID customerId, @PathVariable String car){
 
-        MessageCarros messageCarros = this.carroService.deletar(requestId, carro);
+        this.carService.delete(customerId, car);
 
         return ResponseEntity
-                .status(messageCarros.httpStatusCode())
-                .body(messageCarros);
+                .status(HttpStatus.NO_CONTENT)
+                .build();
 
     }
 

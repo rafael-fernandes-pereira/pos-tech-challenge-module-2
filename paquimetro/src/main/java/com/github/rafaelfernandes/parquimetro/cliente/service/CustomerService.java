@@ -4,7 +4,7 @@ import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerNotFoundException;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerValidationException;
-import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
+import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.validation.ValidacaoRequest;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 @Service
 public class CustomerService {
 
-    @Autowired private ClienteRepository repository;
+    @Autowired private CustomerRepository repository;
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
@@ -33,11 +33,11 @@ public class CustomerService {
 
         try {
 
-            CustomerEntity clienteASalvar = CustomerEntity.from(customer, Boolean.TRUE);
+            CustomerEntity customerToSave = CustomerEntity.from(customer, Boolean.TRUE);
 
-            CustomerEntity clienteSalvo = repository.insert(clienteASalvar);
+            CustomerEntity customerSaved = repository.insert(customerToSave);
 
-            return Customer.from(clienteSalvo);
+            return Customer.from(customerSaved);
 
         } catch (DuplicateKeyException ex) {
             throw new CustomerDuplicateException();
@@ -48,11 +48,11 @@ public class CustomerService {
 
     public Customer findBydId(UUID requestId){
 
-        Optional<CustomerEntity> clienteEntity = repository.findById(requestId);
+        Optional<CustomerEntity> customerEntity = repository.findById(requestId);
 
-        if (clienteEntity.isEmpty()) throw new CustomerNotFoundException();
-
-        return Customer.from(clienteEntity.get());
+        return customerEntity
+                .map(Customer::from)
+                .orElseThrow(CustomerNotFoundException::new);
 
     }
 
