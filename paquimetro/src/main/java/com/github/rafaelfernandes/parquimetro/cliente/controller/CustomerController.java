@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/customers")
 public class CustomerController {
 
     @Autowired private ClienteRepository repository;
@@ -51,7 +51,7 @@ public class CustomerController {
         Customer customerSaved = this.customerService.create(customer);
 
         URI location = uriComponentsBuilder
-                .path("clientes/{id}")
+                .path("customers/{id}")
                 .buildAndExpand(customerSaved.id())
                 .toUri();
 

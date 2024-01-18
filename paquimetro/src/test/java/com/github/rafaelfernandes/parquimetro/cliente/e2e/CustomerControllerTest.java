@@ -77,7 +77,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/"+ requestId,
+                        "/customers/"+ requestId,
                         String.class
                 );
 
@@ -131,7 +131,7 @@ public class CustomerControllerTest {
     void shouldReturnNotFoundWhenCustomerNotExists(){
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/be16f7b8-8da4-4930-b2e2-bf912dcfc8a8",
+                        "/customers/be16f7b8-8da4-4930-b2e2-bf912dcfc8a8",
                         String.class
                 );
 
@@ -152,7 +152,7 @@ public class CustomerControllerTest {
     void deveRetornarBadRequestQuandoNaoPassarUUID(){
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/99",
+                        "/customers/99",
                         String.class
                 );
 
@@ -167,7 +167,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
-                        "/clientes/",
+                        "/customers/",
                         customer,
                         Void.class
                 );
@@ -193,7 +193,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/clientes/",
+                        "/customers/",
                         customer,
                         String.class
                 );
@@ -216,13 +216,14 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarDuplicateRecordAoCadastrarUmNovoCliente(){
+    @DisplayName("Should Return Duplicate Data When Create New Customer Has Exists")
+    void shouldReturnDuplicateDataWhenCreateNewCustomerHasExists(){
 
         Customer customer = GerarCadastro.cliente(Boolean.TRUE);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
-                        "/clientes/",
+                        "/customers/",
                         customer,
                         Void.class
                 );
@@ -231,7 +232,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> createResponseDuplicate = this.restTemplate
                 .postForEntity(
-                        "/clientes/",
+                        "/customers/",
                         customer,
                         String.class
                 );
@@ -264,7 +265,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/",
+                        "/customers/",
                         String.class
                 );
 
@@ -314,7 +315,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/?page=0&size=2000",
+                        "/customers/?page=0&size=2000",
                         String.class
                 );
 
@@ -364,7 +365,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/clientes/?page=1",
+                        "/customers/?page=1",
                         String.class
                 );
 
@@ -401,7 +402,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + clienteSalvo.id(),
+                        "/customers/" + clienteSalvo.id(),
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -411,7 +412,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + clienteSalvo.id(),
+                        "/customers/" + clienteSalvo.id(),
                         String.class
                 );
 
@@ -438,7 +439,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + naoExisteId,
+                        "/customers/" + naoExisteId,
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -455,7 +456,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> deleteResponse = restTemplate
                 .exchange(
-                        "/clientes/" + clienteSalvo.id(),
+                        "/customers/" + clienteSalvo.id(),
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -465,7 +466,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + clienteSalvo.id(),
+                        "/customers/" + clienteSalvo.id(),
                         Void.class
                 );
 
@@ -481,7 +482,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + naoExisteId,
+                        "/customers/" + naoExisteId,
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -506,7 +507,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + clienteSalvo.id() + "/cars",
+                        "/customers/" + clienteSalvo.id() + "/cars",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -520,7 +521,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + clienteSalvo.id(),
+                        "/customers/" + clienteSalvo.id(),
                         String.class
                 );
 
@@ -545,7 +546,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + customer.id() + "/cars",
+                        "/customers/" + customer.id() + "/cars",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -566,7 +567,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + customer.id() + "/cars",
+                        "/customers/" + customer.id() + "/cars",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -583,7 +584,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + clienteSalvo.id() + "/cars",
+                        "/customers/" + clienteSalvo.id() + "/cars",
                         String.class
                 );
 
@@ -604,7 +605,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + customer.id() + "/cars",
+                        "/customers/" + customer.id() + "/cars",
                         String.class
                 );
 
@@ -621,7 +622,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> deleteResponse = restTemplate
                 .exchange(
-                        "/clientes/" + clienteSalvo.id() + "/" + carro,
+                        "/customers/" + clienteSalvo.id() + "/" + carro,
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -631,7 +632,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + clienteSalvo.id() + "/cars" ,
+                        "/customers/" + clienteSalvo.id() + "/cars" ,
                         String.class
                 );
 
@@ -654,7 +655,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + clienteSalvo.id() + "/" + carro,
+                        "/customers/" + clienteSalvo.id() + "/" + carro,
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -675,7 +676,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + customer.id() + "/" + carro,
+                        "/customers/" + customer.id() + "/" + carro,
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -707,7 +708,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + customerEntity.id() + "/formaPagamento",
+                        "/customers/" + customerEntity.id() + "/formaPagamento",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -717,7 +718,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + customerEntity.id(),
+                        "/customers/" + customerEntity.id(),
                         String.class
                 );
 
@@ -738,7 +739,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + customer.id() + "/formaPagamento",
+                        "/customers/" + customer.id() + "/formaPagamento",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -757,7 +758,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/clientes/" + cliente.id() + "/formaPagamento",
+                        "/customers/" + cliente.id() + "/formaPagamento",
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -776,7 +777,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + clienteSalvo.id() + "/formaPagamento",
+                        "/customers/" + clienteSalvo.id() + "/formaPagamento",
                         String.class
                 );
 
@@ -796,7 +797,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/clientes/" + customer.id() + "/formaPagamento",
+                        "/customers/" + customer.id() + "/formaPagamento",
                         String.class
                 );
 
