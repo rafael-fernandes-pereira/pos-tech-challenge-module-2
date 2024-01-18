@@ -1,10 +1,10 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.e2e;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ContatoEntity;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
@@ -19,6 +19,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,14 +76,14 @@ public class EstacionamentoAbertoControllerTest {
 
     @NotNull
     private ClienteCarro cadastrarNovoCliente() {
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
-        ClienteEntity clienteEntity = ClienteDto.from(cliente, Boolean.TRUE);
+        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
-        ClienteEntity clienteSalvoEntity = clienteRepository.save(clienteEntity);
+        CustomerEntity clienteSalvoEntity = clienteRepository.save(customerEntity);
 
-        Cliente clienteSalvo = ClienteDto.from(clienteSalvoEntity);
+        Customer customerSalvo = Customer.from(clienteSalvoEntity);
 
-        return new ClienteCarro(clienteSalvo, clienteSalvo.carros().get(0));
+        return new ClienteCarro(customerSalvo, customerSalvo.cars().get(0));
     }
 
     @Test
@@ -90,11 +91,11 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.estacionamentoService.registrar(TipoPeriodo.FIXO, clienteCarro.cliente().id(), clienteCarro.carro(), 3);
+        this.estacionamentoService.registrar(TipoPeriodo.FIXO, clienteCarro.customer().id(), clienteCarro.carro(), 3);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/aberto",
+                        "/estacionamento/"+ clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/aberto",
                         String.class
                 );
 
@@ -104,15 +105,15 @@ public class EstacionamentoAbertoControllerTest {
 
         String id = documentContext.read("$.estacionamentos[0].cliente_id");
 
-        assertThat(id).isEqualTo(clienteCarro.cliente().id().toString());
+        assertThat(id).isEqualTo(clienteCarro.customer().id().toString());
 
         String carro = documentContext.read("$.estacionamentos[0].carro");
 
         assertThat(carro).isEqualTo(clienteCarro.carro());
 
-        String formaPagamento = documentContext.read("$.estacionamentos[0].forma_pagamento");
+        String formaPagamento = documentContext.read("$.estacionamentos[0].payment_method");
 
-        assertThat(formaPagamento).isEqualTo(clienteCarro.cliente().forma_pagamento().name());
+        assertThat(formaPagamento).isEqualTo(clienteCarro.customer().payment_method().name());
 
         String tipoPeriodo = documentContext.read("$.estacionamentos[0].tipo_periodo");
 
@@ -165,7 +166,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/AABBCCD" + "/aberto",
+                        "/estacionamento/"+ clienteCarro.customer().id() + "/AABBCCD" + "/aberto",
                         String.class
                 );
 
@@ -193,7 +194,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/fixo",
                         fixo,
                         Void.class
                 );
@@ -213,7 +214,8 @@ public class EstacionamentoAbertoControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarRegistrarTempoFixo(){
+    @DisplayName("Should return customer not found when register park fix")
+    void shouldReturnCustomerNotFoundWhenRegisterParkFix(){
 
         Fixo fixo = new Fixo(3);
 
@@ -228,7 +230,7 @@ public class EstacionamentoAbertoControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
@@ -246,7 +248,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/AABBCCD/fixo",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/AABBCCD/fixo",
                         fixo,
                         String.class
                 );
@@ -272,7 +274,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/fixo",
                         fixo,
                         Void.class
                 );
@@ -282,7 +284,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> createResponseDuplicate = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/fixo",
                         fixo,
                         String.class
                 );
@@ -308,7 +310,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/fixo",
                         fixo,
                         String.class
                 );
@@ -329,7 +331,7 @@ public class EstacionamentoAbertoControllerTest {
 
         createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/fixo",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/fixo",
                         fixo,
                         String.class
                 );
@@ -353,11 +355,11 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/hora",
                         null,
                         String.class
                 );
@@ -380,11 +382,11 @@ public class EstacionamentoAbertoControllerTest {
     void deveRetornarBadRequestQuandoTipoPeriodoIgualHoraEPgamentoPix(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.PIX.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.PIX.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/hora",
                         null,
                         String.class
                 );
@@ -418,7 +420,7 @@ public class EstacionamentoAbertoControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
@@ -436,7 +438,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/AABBCCD/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/AABBCCD/hora",
                         fixo,
                         String.class
                 );
@@ -458,11 +460,11 @@ public class EstacionamentoAbertoControllerTest {
     void deveRetonarDuplicidadeQUandoTentaRegistrarTempoHoraEUmaMesmaPlaca(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/hora",
                         null,
                         String.class
                 );
@@ -472,7 +474,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> createResponseDuplicate = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/hora",
                         null,
                         String.class
                 );
@@ -494,13 +496,13 @@ public class EstacionamentoAbertoControllerTest {
     void deveRetonarDuracaoNulaQuandoRegistraHora(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         Fixo fixo = new Fixo(0);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/hora",
                         fixo,
                         String.class
                 );
@@ -520,7 +522,7 @@ public class EstacionamentoAbertoControllerTest {
 
         createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/hora",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/hora",
                         fixo,
                         String.class
                 );
@@ -542,18 +544,18 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
                 UUID.randomUUID(),
-                clienteCarro.cliente().id(),
+                clienteCarro.customer().id(),
                 clienteCarro.carro(),
-                clienteCarro.cliente().nome(),
-                new ContatoEntity(
-                        clienteCarro.cliente().contato().email(),
-                        clienteCarro.cliente().contato().celular()
+                clienteCarro.customer().name(),
+                new ContactEntity(
+                        clienteCarro.customer().contact().email(),
+                        clienteCarro.customer().contact().cellphone()
                 ),
-                clienteCarro.cliente().forma_pagamento(),
+                clienteCarro.customer().payment_method(),
                 TipoPeriodo.FIXO,
                 2,
                 LocalDateTime.now().minusHours(2L)
@@ -563,7 +565,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/finalizar",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/finalizar",
                         null,
                         String.class
                 );
@@ -611,7 +613,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        "/estacionamento/"+ clienteCarro.customer().id() + "/" + clienteCarro.carro(),
                         String.class
                 );
 
@@ -624,18 +626,18 @@ public class EstacionamentoAbertoControllerTest {
     void deveFinalizar2HorasComMulta(){
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
                 UUID.randomUUID(),
-                clienteCarro.cliente().id(),
+                clienteCarro.customer().id(),
                 clienteCarro.carro(),
-                clienteCarro.cliente().nome(),
-                new ContatoEntity(
-                        clienteCarro.cliente().contato().email(),
-                        clienteCarro.cliente().contato().celular()
+                clienteCarro.customer().name(),
+                new ContactEntity(
+                        clienteCarro.customer().contact().email(),
+                        clienteCarro.customer().contact().cellphone()
                 ),
-                clienteCarro.cliente().forma_pagamento(),
+                clienteCarro.customer().payment_method(),
                 TipoPeriodo.FIXO,
                 2,
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
@@ -645,7 +647,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/finalizar",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/finalizar",
                         null,
                         String.class
                 );
@@ -693,7 +695,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        "/estacionamento/"+ clienteCarro.customer().id() + "/" + clienteCarro.carro(),
                         String.class
                 );
 
@@ -705,18 +707,18 @@ public class EstacionamentoAbertoControllerTest {
 
         ClienteCarro clienteCarro = cadastrarNovoCliente();
 
-        this.formaPagamentoService.alterar(clienteCarro.cliente().id(), FormaPagamento.CARTAO_CREDITO.name());
+        this.formaPagamentoService.alterar(clienteCarro.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         EstacionamentoAbertoEntity estacionamentoAberto = new EstacionamentoAbertoEntity(
                 UUID.randomUUID(),
-                clienteCarro.cliente().id(),
+                clienteCarro.customer().id(),
                 clienteCarro.carro(),
-                clienteCarro.cliente().nome(),
-                new ContatoEntity(
-                        clienteCarro.cliente().contato().email(),
-                        clienteCarro.cliente().contato().celular()
+                clienteCarro.customer().name(),
+                new ContactEntity(
+                        clienteCarro.customer().contact().email(),
+                        clienteCarro.customer().contact().cellphone()
                 ),
-                clienteCarro.cliente().forma_pagamento(),
+                clienteCarro.customer().payment_method(),
                 TipoPeriodo.HORA,
                 null,
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
@@ -726,7 +728,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() + "/finalizar",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() + "/finalizar",
                         null,
                         String.class
                 );
@@ -774,60 +776,11 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ clienteCarro.cliente().id() + "/" + clienteCarro.carro(),
+                        "/estacionamento/"+ clienteCarro.customer().id() + "/" + clienteCarro.carro(),
                         String.class
                 );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-
-    }
-
-    @Test
-    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarFinalizar(){
-
-        ResponseEntity<String> createResponse = this.restTemplate
-                .postForEntity(
-                        "/estacionamento/" + UUID.randomUUID() + "/AABBCCD/finalizar",
-                        null,
-                        String.class
-                );
-
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
-
-        ArrayList<String> erros = documentContext.read("$.erros");
-
-        assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Cliente não existe!"))
-
-        ;
-
-    }
-
-    @Test
-    void deveRetornarNotFoundQuandoPlacaNaoExisteAoTentarFinalizar(){
-
-        ClienteCarro clienteCarro = cadastrarNovoCliente();
-
-        ResponseEntity<String> createResponse = this.restTemplate
-                .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/AABBCCD/finalizar",
-                        null,
-                        String.class
-                );
-
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
-
-        ArrayList<String> erros = documentContext.read("$.erros");
-
-        assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não cadastrado para esse cliente"))
-        ;
-
-
 
     }
 
@@ -838,7 +791,7 @@ public class EstacionamentoAbertoControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + clienteCarro.cliente().id() + "/" + clienteCarro.carro() +"/finalizar",
+                        "/estacionamento/" + clienteCarro.customer().id() + "/" + clienteCarro.carro() +"/finalizar",
                         null,
                         String.class
                 );

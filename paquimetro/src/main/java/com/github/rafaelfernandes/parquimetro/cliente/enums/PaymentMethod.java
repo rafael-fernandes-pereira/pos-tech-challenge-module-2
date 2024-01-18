@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.enums;
 import lombok.Getter;
 
 @Getter
-public enum FormaPagamento {
+public enum PaymentMethod {
 
     PIX ("Pix"),
     CARTAO_CREDITO("Cartão de crédito"),
@@ -11,14 +11,14 @@ public enum FormaPagamento {
 
     private final String descricao;
 
-    FormaPagamento(String descricao){
+    PaymentMethod(String descricao){
         this.descricao = descricao;
     }
 
-    public static FormaPagamento obterPorNome(String descricao) {
-        for (FormaPagamento formaPagamento : values()) {
-            if (formaPagamento.name().equalsIgnoreCase(descricao)) {
-                return formaPagamento;
+    public static PaymentMethod obterPorNome(String descricao) {
+        for (PaymentMethod paymentMethod : values()) {
+            if (paymentMethod.name().equalsIgnoreCase(descricao)) {
+                return paymentMethod;
             }
         }
         return null;

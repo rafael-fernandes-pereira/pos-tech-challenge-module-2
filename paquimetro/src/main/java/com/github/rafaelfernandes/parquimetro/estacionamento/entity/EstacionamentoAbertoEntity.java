@@ -1,9 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.entity;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contato;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ContatoEntity;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,24 +17,24 @@ public record EstacionamentoAbertoEntity(
         @Indexed(unique = true)
         String carro,
         String nome,
-        ContatoEntity contato,
-        FormaPagamento formaPagamento,
+        ContactEntity contato,
+        PaymentMethod paymentMethod,
         TipoPeriodo tipoPeriodo,
         Integer duracaoFixa,
         LocalDateTime inicio
 ) {
-        public static EstacionamentoAbertoEntity novo (Cliente cliente, String carro, TipoPeriodo tipoPeriodo, Integer duracao){
+        public static EstacionamentoAbertoEntity novo (Customer customer, String carro, TipoPeriodo tipoPeriodo, Integer duracao){
 
                 return new EstacionamentoAbertoEntity(
                         UUID.randomUUID(),
-                        cliente.id(),
+                        customer.id(),
                         carro,
-                        cliente.nome(),
-                        new ContatoEntity(
-                                cliente.contato().email(),
-                                cliente.contato().celular()
+                        customer.name(),
+                        new ContactEntity(
+                                customer.contact().email(),
+                                customer.contact().cellphone()
                         ),
-                        cliente.forma_pagamento(),
+                        customer.payment_method(),
                         tipoPeriodo,
                         tipoPeriodo.equals(TipoPeriodo.FIXO) ? duracao : null,
                         LocalDateTime.now()

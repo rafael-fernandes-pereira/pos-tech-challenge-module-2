@@ -2,9 +2,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.controller.response;
 
 import java.util.List;
 
-public record MessageCarros(
-        List<String> cars,
-        Integer httpStatusCode,
+public record CustomerError(
         List<String> errors
-){
+) {
 }

@@ -1,8 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.cliente.unit;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contato;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Endereco;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Address;
 import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.github.rafaelfernandes.parquimetro.cliente.validation.ValidacaoRequest;
@@ -42,53 +42,53 @@ public class ValidationTest {
 
     @Test
     void deveRetornarErros(){
-        Cliente cliente = new Cliente(null, null, null,null,null,null, null);
+        Customer customer = new Customer(null, null, null,null,null,null, null);
 
-        List<String> erros = this.validacaoRequest.cliente(cliente);
-
-        assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo nome deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo documento deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo forma_pagamento deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo carro deve ter pelo menos uma placa"))
-        ;
-
-        cliente = new Cliente(null, "Teste", null,null,null,null, null);
-
-        erros = this.validacaoRequest.cliente(cliente);
+        List<String> erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equals("O campo nome deve ter no mínimo de 20 e no máximo de 100 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo name deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo document deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo payment_method deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo cars deve ter pelo menos uma placa"))
         ;
 
-        cliente = new Cliente(null, "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste", null,null,null,null, new ArrayList<String>());
+        customer = new Customer(null, "Teste", null,null,null,null, null);
 
-        erros = this.validacaoRequest.cliente(cliente);
+        erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equals("O campo nome deve ter no mínimo de 20 e no máximo de 100 caracteres"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo carro deve ter pelo menos uma placa"))
+                .anyMatch(erro -> erro.equals("O campo name deve ter no mínimo de 20 e no máximo de 100 caracteres"))
         ;
 
-        Endereco endereco = new Endereco(null, null, null, null, null, null);
-        cliente = new Cliente(null, null, null,endereco,null,null, null);
+        customer = new Customer(null, "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste", null,null,null,null, new ArrayList<String>());
 
-        erros = this.validacaoRequest.cliente(cliente);
+        erros = this.validacaoRequest.cliente(customer);
+
+        assertThat(erros)
+                .anyMatch(erro -> erro.equals("O campo name deve ter no mínimo de 20 e no máximo de 100 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo cars deve ter pelo menos uma placa"))
+        ;
+
+        Address address = new Address(null, null, null, null, null, null);
+        customer = new Customer(null, null, null, address,null,null, null);
+
+        erros = this.validacaoRequest.cliente(customer);
 
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.logradouro deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.numero deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.bairro deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.cidade deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.cidade deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.public_area deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.number deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.neighborhood deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.city deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.state deve estar preenchido"))
 
         ;
 
 
-        endereco = new Endereco(
+        address = new Address(
                 "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste",
                 -1,
                 "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste",
@@ -97,18 +97,18 @@ public class ValidationTest {
                 null
         );
 
-        cliente = new Cliente(null, null, null,endereco,null,null, null);
+        customer = new Customer(null, null, null, address,null,null, null);
 
-        erros = this.validacaoRequest.cliente(cliente);
+        erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.logradouro deve ter no máximo 150 caracteres"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.numero deve ser maior que zero (0)"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.complemento deve ter no máximo 150 caracteres"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.complemento deve ter no máximo 60 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.public_area deve ter no máximo 150 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.number deve ser maior que zero (0)"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.additional_address_details deve ter no máximo 150 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.city deve ter no máximo 60 caracteres"))
         ;
 
-        endereco = new Endereco(
+        address = new Address(
                 "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste",
                 0,
                 "TesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTesteTeste",
@@ -117,38 +117,38 @@ public class ValidationTest {
                 null
         );
 
-        cliente = new Cliente(null, null, null,endereco,null,null, null);
+        customer = new Customer(null, null, null, address,null,null, null);
 
-        erros = this.validacaoRequest.cliente(cliente);
+        erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.logradouro deve ter no máximo 150 caracteres"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.numero deve ser maior que zero (0)"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.complemento deve ter no máximo 150 caracteres"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo endereco.complemento deve ter no máximo 60 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.public_area deve ter no máximo 150 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.number deve ser maior que zero (0)"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.additional_address_details deve ter no máximo 150 caracteres"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo address.city deve ter no máximo 60 caracteres"))
         ;
 
-        Contato contato = new Contato(null, null);
+        Contact contact = new Contact(null, null);
 
-        cliente = new Cliente(null, null, null,null,null,contato, null);
+        customer = new Customer(null, null, null,null,null, contact, null);
 
-        erros = this.validacaoRequest.cliente(cliente);
+        erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato.email deve estar preenchido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato.celular deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact.email deve estar preenchido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact.cellphone deve estar preenchido"))
 
         ;
 
-        contato = new Contato("teste", "bn78b2ty3784n6y7823");
+        contact = new Contact("teste", "bn78b2ty3784n6y7823");
 
-        cliente = new Cliente(null, null, null,null,null,contato, null);
+        customer = new Customer(null, null, null,null,null, contact, null);
 
-        erros = this.validacaoRequest.cliente(cliente);
+        erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato.email deve ser um email válido"))
-                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contato.celular está com formatação inválida"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact.email deve ser um email válido"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("O campo contact.cellphone está com formatação inválida"))
 
         ;
 
@@ -157,9 +157,9 @@ public class ValidationTest {
 
     @Test
     void deveRetornarSucesso(){
-        Cliente cliente = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
 
-        List<String> erros = this.validacaoRequest.cliente(cliente);
+        List<String> erros = this.validacaoRequest.cliente(customer);
 
         assertThat(erros).isEmpty();
 

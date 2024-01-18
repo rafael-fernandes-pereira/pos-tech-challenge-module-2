@@ -1,11 +1,9 @@
 package com.github.rafaelfernandes.parquimetro.cliente.dto;
 
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ContatoEntity;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contato;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Endereco;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.EnderecoEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.AddressEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,69 +11,43 @@ import java.util.UUID;
 
 public class ClienteDto {
 
-    public static ClienteEntity from(Cliente cliente, Boolean isNew){
+    public static CustomerEntity from(Customer customer, Boolean isNew){
 
-        EnderecoEntity enderecoEntity = new EnderecoEntity(
-                cliente.endereco().logradouro(),
-                cliente.endereco().numero(),
-                cliente.endereco().complemento(),
-                cliente.endereco().bairro(),
-                cliente.endereco().cidade(),
-                cliente.endereco().estado()
+        AddressEntity addressEntity = new AddressEntity(
+                customer.address().public_area(),
+                customer.address().number(),
+                customer.address().additional_address_details(),
+                customer.address().neighborhood(),
+                customer.address().city(),
+                customer.address().state()
         );
 
-        ContatoEntity contatoEntity = new ContatoEntity(
-                cliente.contato().email(),
-                cliente.contato().celular()
-        );
-
-
-        return new ClienteEntity(
-                isNew? UUID.randomUUID() : cliente.id(),
-                cliente.nome(),
-                cliente.documento(),
-                enderecoEntity,
-                cliente.forma_pagamento(),
-                contatoEntity,
-                cliente.carros()
-        );
-    }
-
-
-    public static Cliente from(ClienteEntity cliente){
-
-        Endereco endereco = new Endereco(
-                cliente.endereco().logradouro(),
-                cliente.endereco().numero(),
-                cliente.endereco().complemento(),
-                cliente.endereco().bairro(),
-                cliente.endereco().cidade(),
-                cliente.endereco().estado()
-        );
-
-        Contato contato = new Contato(
-                cliente.contato().email(),
-                cliente.contato().telefone()
+        ContactEntity contactEntity = new ContactEntity(
+                customer.contact().email(),
+                customer.contact().cellphone()
         );
 
 
-        return new Cliente(
-                cliente.id(),
-                cliente.nome(),
-                cliente.documento(),
-                endereco,
-                cliente.forma_pagamento(),
-                contato,
-                cliente.carros()
+        return new CustomerEntity(
+                isNew? UUID.randomUUID() : customer.id(),
+                customer.name(),
+                customer.document(),
+                addressEntity,
+                customer.payment_method(),
+                contactEntity,
+                customer.cars()
         );
     }
 
-    public static List<Cliente> getListFrom(ClienteEntity cliente){
 
-        ArrayList<Cliente> clientes = new ArrayList<>();
-        clientes.add(ClienteDto.from(cliente));
 
-        return clientes;
+
+    public static List<Customer> getListFrom(CustomerEntity cliente){
+
+        ArrayList<Customer> customers = new ArrayList<>();
+        customers.add(Customer.from(cliente));
+
+        return customers;
 
     }
 

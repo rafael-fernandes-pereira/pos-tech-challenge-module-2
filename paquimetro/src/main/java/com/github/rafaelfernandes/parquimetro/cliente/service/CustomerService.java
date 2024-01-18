@@ -3,10 +3,13 @@ package com.github.rafaelfernandes.parquimetro.cliente.service;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.MessageDTO;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerNotFoundException;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerValidationException;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.validation.ValidacaoRequest;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -22,55 +25,46 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class ClienteService {
+public class CustomerService {
 
     @Autowired private ClienteRepository repository;
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
-    public MessageCliente registro(Cliente cliente){
+    public Customer create(Customer customer){
 
-        List<String> erros = validacaoRequest.cliente(cliente);
+        List<String> erros = validacaoRequest.cliente(customer);
 
-        if (!erros.isEmpty()){
-            return MessageDTO.clienteError(HttpStatus.BAD_REQUEST, erros);
-        }
-
-        ClienteEntity clienteASalvar = ClienteDto.from(cliente, Boolean.TRUE);
+        if (!erros.isEmpty()) throw new CustomerValidationException(erros);
 
         try {
 
-            ClienteEntity clienteSalvo = repository.insert(clienteASalvar);
+            CustomerEntity clienteASalvar = CustomerEntity.from(customer, Boolean.TRUE);
 
-            List<Cliente> clientes = ClienteDto.getListFrom(clienteSalvo);
+            CustomerEntity clienteSalvo = repository.insert(clienteASalvar);
 
-             return MessageDTO.clienteSuccess(HttpStatus.CREATED, clientes);
+            return Customer.from(clienteSalvo);
 
-        } catch (DuplicateKeyException ex){
-            erros.add("Campo documento e/ou campo email já existem!");
-            return MessageDTO.clienteError(HttpStatus.CONFLICT, erros);
+        } catch (DuplicateKeyException ex) {
+            throw new CustomerDuplicateException();
         }
 
 
     }
 
-    public MessageCliente obterPorId(UUID requestId){
-        Optional<ClienteEntity> clienteEntity = repository.findById(requestId);
+    public Customer findBydId(UUID requestId){
 
-        if (clienteEntity.isPresent()) {
+        Optional<CustomerEntity> clienteEntity = repository.findById(requestId);
 
-            List<Cliente> clientes = ClienteDto.getListFrom(clienteEntity.get());
+        if (clienteEntity.isEmpty()) throw new CustomerNotFoundException();
 
-            return MessageDTO.clienteSuccess(HttpStatus.OK, clientes);
-        }
-
-        return MessageDTO.clienteError(HttpStatus.NOT_FOUND, "Cliente não existe!");
+        return Customer.from(clienteEntity.get());
 
     }
 
     public Iterable<MessageCliente> obterTodos(Pageable pageable){
 
-        Page<ClienteEntity> clienteEntities =  this.repository.findAll(pageable);
+        Page<CustomerEntity> clienteEntities =  this.repository.findAll(pageable);
 
         if (clienteEntities.isEmpty()) return new ArrayList<>();
 
@@ -81,10 +75,10 @@ public class ClienteService {
 
     }
 
-    public Boolean alterar(UUID requestId, Cliente cliente){
+    public Boolean alterar(UUID requestId, Customer customer){
 
         if (this.repository.existsById(requestId)){
-            ClienteEntity entity = ClienteDto.from(cliente, Boolean.FALSE);
+            CustomerEntity entity = ClienteDto.from(customer, Boolean.FALSE);
             this.repository.save(entity);
             return Boolean.TRUE;
         }

@@ -2,7 +2,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.service;
 
 import com.github.rafaelfernandes.parquimetro.cliente.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCarros;
-import com.github.rafaelfernandes.parquimetro.cliente.entity.ClienteEntity;
+import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,30 +23,30 @@ public class CarroService {
             return MessageDTO.carrosError(HttpStatus.BAD_REQUEST, erros);
         }
 
-        Optional<ClienteEntity> cliente = this.repository.findById(requestId);
+        Optional<CustomerEntity> cliente = this.repository.findById(requestId);
 
         if (cliente.isEmpty()) {
             return MessageDTO.carrosError(HttpStatus.NOT_FOUND, erros);
         }
 
-        List<String> carrosSalvos = cliente.get().carros();
+        List<String> carrosSalvos = cliente.get().cars();
 
         Set<String> novosCarros = new TreeSet<>();
 
         novosCarros.addAll(carrosSalvos.stream().toList());
         novosCarros.addAll(carros.stream().toList());
 
-        ClienteEntity clienteEntity = new ClienteEntity(
+        CustomerEntity customerEntity = new CustomerEntity(
                 requestId,
-                cliente.get().nome(),
-                cliente.get().documento(),
-                cliente.get().endereco(),
-                cliente.get().forma_pagamento(),
-                cliente.get().contato(),
+                cliente.get().name(),
+                cliente.get().document(),
+                cliente.get().address(),
+                cliente.get().payment_method(),
+                cliente.get().contact(),
                 novosCarros.stream().toList()
         );
 
-        this.repository.save(clienteEntity);
+        this.repository.save(customerEntity);
 
         return MessageDTO.carrosSuccess(HttpStatus.NO_CONTENT, null);
 
@@ -54,10 +54,10 @@ public class CarroService {
 
     public MessageCarros obter(UUID requestId){
 
-        Optional<ClienteEntity> cliente = this.repository.findById(requestId);
+        Optional<CustomerEntity> cliente = this.repository.findById(requestId);
 
         return cliente
-                .map(clienteEntity -> MessageDTO.carrosSuccess(HttpStatus.OK, clienteEntity.carros()))
+                .map(clienteEntity -> MessageDTO.carrosSuccess(HttpStatus.OK, clienteEntity.cars()))
                 .orElseGet(() -> MessageDTO.carrosError(HttpStatus.NOT_FOUND, null));
 
 
@@ -65,13 +65,13 @@ public class CarroService {
 
     public MessageCarros deletar(UUID requestId, String carro) {
 
-        Optional<ClienteEntity> cliente = this.repository.findById(requestId);
+        Optional<CustomerEntity> cliente = this.repository.findById(requestId);
 
         if (cliente.isEmpty()) {
             return MessageDTO.carrosError(HttpStatus.NOT_FOUND, null);
         }
 
-        List<String> carrosSalvos = cliente.get().carros();
+        List<String> carrosSalvos = cliente.get().cars();
 
         if (!carrosSalvos.contains(carro)){
             return MessageDTO.carrosError(HttpStatus.NOT_FOUND, null);
@@ -80,17 +80,17 @@ public class CarroService {
         List<String> novosCarros = new ArrayList<>(carrosSalvos);
         novosCarros.remove(carro);
 
-        ClienteEntity clienteEntity = new ClienteEntity(
+        CustomerEntity customerEntity = new CustomerEntity(
                 requestId,
-                cliente.get().nome(),
-                cliente.get().documento(),
-                cliente.get().endereco(),
-                cliente.get().forma_pagamento(),
-                cliente.get().contato(),
+                cliente.get().name(),
+                cliente.get().document(),
+                cliente.get().address(),
+                cliente.get().payment_method(),
+                cliente.get().contact(),
                 novosCarros.stream().toList()
         );
 
-        this.repository.save(clienteEntity);
+        this.repository.save(customerEntity);
 
         return MessageDTO.carrosSuccess(HttpStatus.NO_CONTENT, null);
     }

@@ -5,10 +5,10 @@ import com.github.rafaelfernandes.parquimetro.cliente.controller.response.Messag
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageFormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CarroService;
-import com.github.rafaelfernandes.parquimetro.cliente.service.ClienteService;
+import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
 import com.github.rafaelfernandes.parquimetro.cliente.validation.ValidacaoRequest;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -23,50 +23,42 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/clientes")
-public class ClienteController {
+public class CustomerController {
 
     @Autowired private ClienteRepository repository;
 
     @Autowired private ValidacaoRequest validacaoRequest;
 
-    @Autowired private ClienteService clienteService;
+    @Autowired private CustomerService customerService;
     @Autowired private CarroService carroService;
 
     @Autowired private FormaPagamentoService formaPagamentoService;
 
     @GetMapping("/{requestId}")
-    private ResponseEntity<MessageCliente> findById(@PathVariable UUID requestId){
+    private ResponseEntity<Customer> findById(@PathVariable UUID requestId){
 
-        MessageCliente messageCliente = this.clienteService.obterPorId(requestId);
+        Customer customer = this.customerService.findBydId(requestId);
 
         return ResponseEntity
-                .status(messageCliente.httpStatusCode())
-                .body(messageCliente);
+                .status(HttpStatus.OK)
+                .body(customer);
 
     }
 
     @PostMapping("/")
-    private ResponseEntity<MessageCliente> cadastrarNovoCliente(@RequestBody Cliente cliente, UriComponentsBuilder uriComponentsBuilder){
+    private ResponseEntity<Customer> createCustomer(@RequestBody Customer customer, UriComponentsBuilder uriComponentsBuilder){
 
-        MessageCliente messageCliente = this.clienteService.registro(cliente);
-
-        if (!messageCliente.errors().isEmpty()) {
-            return ResponseEntity
-                    .status(messageCliente.httpStatusCode())
-                    .body(messageCliente);
-        }
+        Customer customerSaved = this.customerService.create(customer);
 
         URI location = uriComponentsBuilder
                 .path("clientes/{id}")
-                .buildAndExpand(messageCliente.clientes().get(0).id())
+                .buildAndExpand(customerSaved.id())
                 .toUri();
 
         return ResponseEntity
-                .status(messageCliente.httpStatusCode())
+                .status(HttpStatus.CREATED)
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(messageCliente);
-
-
+                .body(customerSaved);
 
     }
 
@@ -74,13 +66,13 @@ public class ClienteController {
     ResponseEntity<Iterable<MessageCliente>> getAll(Pageable pageable){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.clienteService.obterTodos(pageable));
+                .body(this.customerService.obterTodos(pageable));
     }
 
     @PutMapping("/{requestId}")
-    ResponseEntity<Void> alterar(@PathVariable UUID requestId, @RequestBody Cliente cliente){
+    ResponseEntity<Void> alterar(@PathVariable UUID requestId, @RequestBody Customer customer){
 
-        Boolean updated = this.clienteService.alterar(requestId, cliente);
+        Boolean updated = this.customerService.alterar(requestId, customer);
 
         return ResponseEntity
                 .status(updated ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
@@ -89,7 +81,7 @@ public class ClienteController {
 
     @DeleteMapping("/{requestId}")
     ResponseEntity<Void> deletar(@PathVariable("requestId") UUID requestId){
-        Boolean deleted = this.clienteService.deletar(requestId);
+        Boolean deleted = this.customerService.deletar(requestId);
 
         return ResponseEntity
                 .status(deleted ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
@@ -97,7 +89,7 @@ public class ClienteController {
 
     }
 
-    @PutMapping("/{requestId}/carros")
+    @PutMapping("/{requestId}/cars")
     ResponseEntity<MessageCarros> incluirCarro(@PathVariable UUID requestId, @RequestBody List<String> carros){
 
         MessageCarros messageCarros = this.carroService.incluir(requestId, carros);
@@ -108,7 +100,7 @@ public class ClienteController {
 
     }
 
-    @GetMapping("/{requestId}/carros")
+    @GetMapping("/{requestId}/cars")
     ResponseEntity<MessageCarros> obterCarros(@PathVariable UUID requestId){
 
         MessageCarros messageCarros = this.carroService.obter(requestId);

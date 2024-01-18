@@ -1,10 +1,10 @@
 package com.github.rafaelfernandes.parquimetro.util;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contato;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Endereco;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.Estados;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Address;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.State;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import net.datafaker.Faker;
 
 import java.util.List;
@@ -18,26 +18,26 @@ public class GerarCadastro {
 
     private static final Random random = new Random();
 
-    public static Cliente cliente(Boolean novo){
+    public static Customer cliente(Boolean novo){
 
         Integer randFormaDePagamento = random.nextInt(0, 2);
-        FormaPagamento formaPagamento = FormaPagamento.values()[randFormaDePagamento];
+        PaymentMethod paymentMethod = PaymentMethod.values()[randFormaDePagamento];
 
-        return new Cliente(
+        return new Customer(
                 novo ? null : UUID.fromString(faker.internet().uuid()),
 
                 faker.name().fullName(),
                 Long.valueOf(faker.cpf().valid(false)),
-                new Endereco(
+                new Address(
                         faker.address().streetAddress(),
                         Integer.valueOf(faker.address().streetAddressNumber()),
                         faker.address().secondaryAddress(),
                         faker.address().secondaryAddress(),
                         faker.address().city(),
-                        Estados.valueOf(faker.address().stateAbbr())
+                        State.valueOf(faker.address().stateAbbr())
                 ),
-                formaPagamento,
-                new Contato(
+                paymentMethod,
+                new Contact(
                         faker.internet().emailAddress(),
                         faker.phoneNumber().phoneNumberNational().replaceAll("[(),\\-, ]", "")
                 ),
@@ -88,5 +88,19 @@ public class GerarCadastro {
 
         return result.toString();
     }
+
+    public static String email(){
+        return faker.internet().emailAddress();
+    }
+
+    public static String cpf(){
+        return faker.cpf().valid(false);
+    }
+
+    public static String celular(){
+        return faker.phoneNumber().cellPhone().replaceAll("[(),\\-, ]", "");
+    }
+
+
 
 }

@@ -1,8 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.cliente.validation;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contato;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Endereco;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Address;
 import org.springframework.stereotype.Service;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -21,11 +21,11 @@ public class ValidacaoRequest {
         this.validator = validator;
     }
 
-    public List<String> cliente(Cliente cliente){
+    public List<String> cliente(Customer customer){
 
         List<String> erros = new ArrayList<>();
 
-        Set<ConstraintViolation<Cliente>> violacoesCliente = validator.validate(cliente);
+        Set<ConstraintViolation<Customer>> violacoesCliente = validator.validate(customer);
 
         if (!violacoesCliente.isEmpty()){
             List<String> errosCliente = violacoesCliente.stream()
@@ -35,8 +35,8 @@ public class ValidacaoRequest {
         }
 
 
-        if (null != cliente.endereco()){
-            Set<ConstraintViolation<Endereco>> violacoesEndereco = validator.validate(cliente.endereco());
+        if (null != customer.address()){
+            Set<ConstraintViolation<Address>> violacoesEndereco = validator.validate(customer.address());
 
             if (!violacoesEndereco.isEmpty()){
                 List<String> errosEndereco = violacoesEndereco.stream()
@@ -46,8 +46,8 @@ public class ValidacaoRequest {
             }
         }
 
-        if (null != cliente.contato()){
-            Set<ConstraintViolation<Contato>> violacoesContato = validator.validate(cliente.contato());
+        if (null != customer.contact()){
+            Set<ConstraintViolation<Contact>> violacoesContato = validator.validate(customer.contact());
 
             if (!violacoesContato.isEmpty()){
                 List<String> errosContato = violacoesContato.stream()

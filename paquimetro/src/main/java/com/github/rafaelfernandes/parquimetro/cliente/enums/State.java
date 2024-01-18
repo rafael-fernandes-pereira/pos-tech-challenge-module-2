@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.cliente.enums;
 
-public enum Estados {
+public enum State {
     AC("Acre"),
     AL("Alagoas"),
     AP("Amapá"),
@@ -31,7 +31,7 @@ public enum Estados {
 
     private final String nomeCompleto;
 
-    Estados(String nomeCompleto) {
+    State(String nomeCompleto) {
         this.nomeCompleto = nomeCompleto;
     }
 

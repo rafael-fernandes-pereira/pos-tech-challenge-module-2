@@ -1,11 +1,9 @@
 package com.github.rafaelfernandes.parquimetro.util;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-
-import java.util.UUID;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 
 public record ClienteCarro(
-        Cliente cliente,
+        Customer customer,
         String carro
 ) {
 }

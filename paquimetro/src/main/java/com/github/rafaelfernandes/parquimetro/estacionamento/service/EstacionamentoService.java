@@ -1,9 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.service;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Cliente;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCliente;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.FormaPagamento;
-import com.github.rafaelfernandes.parquimetro.cliente.service.ClienteService;
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
+import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.EstacionamentoAberto;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.EstacionamentoEncerrado;
@@ -42,7 +41,7 @@ public class EstacionamentoService {
     EstacionamentoEnvioReciboRepository estacionamentoEnvioReciboRepository;
 
     @Autowired
-    ClienteService clienteService;
+    CustomerService customerService;
 
     @Value("${estacionamento.valor.fixo}")
     Double valorFixo;
@@ -61,22 +60,17 @@ public class EstacionamentoService {
         if (tipoPeriodo.equals(TipoPeriodo.FIXO) && (duracao == null || duracao <= 0))
             return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Tempo mínimo de 1 hora");
 
-        MessageCliente messageCliente = this.clienteService.obterPorId(clienteId);
+        Customer customer = this.customerService.findBydId(clienteId);
 
-        if (!messageCliente.errors().isEmpty())
-            return MessageEstacionamentoDTO.error(HttpStatus.valueOf(messageCliente.httpStatusCode()), messageCliente.errors());
-
-        Cliente cliente = messageCliente.clientes().get(0);
-
-        if (!cliente.carros().contains(carro))
+        if (!customer.cars().contains(carro))
             return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, "Carro não cadastrado para esse cliente");
 
-        if (tipoPeriodo.equals(TipoPeriodo.HORA) && cliente.forma_pagamento().equals(FormaPagamento.PIX))
+        if (tipoPeriodo.equals(TipoPeriodo.HORA) && customer.payment_method().equals(PaymentMethod.PIX))
             return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Forma de pagamento não permitido para o tipo de periodo escolhido!");
 
         try {
 
-            EstacionamentoAbertoEntity estacionamentoAberto = EstacionamentoAbertoEntity.novo(cliente, carro, tipoPeriodo, duracao);
+            EstacionamentoAbertoEntity estacionamentoAberto = EstacionamentoAbertoEntity.novo(customer, carro, tipoPeriodo, duracao);
 
             EstacionamentoAbertoEntity salvo = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
 
@@ -103,16 +97,6 @@ public class EstacionamentoService {
     }
 
     public MessageEncerrado finalizar(UUID clienteId, String carro){
-
-        MessageCliente messageCliente = this.clienteService.obterPorId(clienteId);
-
-        if (!messageCliente.errors().isEmpty())
-            return MessageEncerrado.error(HttpStatus.valueOf(messageCliente.httpStatusCode()), messageCliente.errors());
-
-        Cliente cliente = messageCliente.clientes().get(0);
-
-        if (!cliente.carros().contains(carro))
-            return MessageEncerrado.error(HttpStatus.NOT_FOUND, "Carro não cadastrado para esse cliente");
 
         MessageAberto messageAberto = this.obterAbertoPorCarro(clienteId, carro);
 
@@ -192,7 +176,7 @@ public class EstacionamentoService {
                 estacionamentoEncerradoEntity.id(),
                 estacionamentoEncerradoEntity.nome(),
                 estacionamentoEncerradoEntity.contato().email(),
-                estacionamentoEncerradoEntity.contato().telefone(),
+                estacionamentoEncerradoEntity.contato().celphone(),
                 recibo
         );
 
