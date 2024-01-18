@@ -62,16 +62,11 @@ public class CustomerService {
 
     }
 
-    public Iterable<MessageCliente> obterTodos(Pageable pageable){
+    public Page<Customer> getAll(Pageable pageable){
 
-        Page<CustomerEntity> clienteEntities =  this.repository.findAll(pageable);
+        Page<CustomerEntity> customers =  this.repository.findAll(pageable);
 
-        if (clienteEntities.isEmpty()) return new ArrayList<>();
-
-        return clienteEntities.stream()
-                .map(clienteEntity -> MessageDTO.clienteSuccess(HttpStatus.OK, ClienteDto.getListFrom(clienteEntity)))
-                .collect(Collectors.toList());
-
+        return customers.map(Customer::from);
 
     }
 

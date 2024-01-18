@@ -3,13 +3,12 @@ package com.github.rafaelfernandes.parquimetro.cliente.controller;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCarros;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageFormaPagamento;
-import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CarroService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
-import com.github.rafaelfernandes.parquimetro.cliente.validation.ValidacaoRequest;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,17 +24,13 @@ import java.util.UUID;
 @RequestMapping("/customers")
 public class CustomerController {
 
-    @Autowired private ClienteRepository repository;
-
-    @Autowired private ValidacaoRequest validacaoRequest;
-
     @Autowired private CustomerService customerService;
     @Autowired private CarroService carroService;
 
     @Autowired private FormaPagamentoService formaPagamentoService;
 
     @GetMapping("/{requestId}")
-    private ResponseEntity<Customer> findById(@PathVariable UUID requestId){
+    private ResponseEntity<Customer> findById(@PathVariable final UUID requestId){
 
         Customer customer = this.customerService.findBydId(requestId);
 
@@ -46,7 +41,7 @@ public class CustomerController {
     }
 
     @PostMapping("/")
-    private ResponseEntity<Customer> createCustomer(@RequestBody Customer customer, UriComponentsBuilder uriComponentsBuilder){
+    private ResponseEntity<Customer> createCustomer(@RequestBody final Customer customer, UriComponentsBuilder uriComponentsBuilder){
 
         Customer customerSaved = this.customerService.create(customer);
 
@@ -63,10 +58,10 @@ public class CustomerController {
     }
 
     @GetMapping("/")
-    ResponseEntity<Iterable<MessageCliente>> getAll(Pageable pageable){
+    ResponseEntity<Page<Customer>> getAll(Pageable pageable){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.customerService.obterTodos(pageable));
+                .body(this.customerService.getAll(pageable));
     }
 
     @PutMapping("/{requestId}")

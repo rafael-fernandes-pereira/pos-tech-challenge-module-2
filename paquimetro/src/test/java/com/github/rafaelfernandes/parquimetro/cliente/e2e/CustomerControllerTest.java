@@ -273,7 +273,7 @@ public class CustomerControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        JSONArray page = documentContext.read("$.[*]");
+        JSONArray page = documentContext.read("$.content[*]");
 
         assertThat(page.size()).isEqualTo(50);
 
@@ -323,7 +323,7 @@ public class CustomerControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        JSONArray page = documentContext.read("$.[*]");
+        JSONArray page = documentContext.read("$.content[*]");
 
         assertThat(page.size()).isEqualTo(1000);
 
@@ -373,7 +373,7 @@ public class CustomerControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        JSONArray page = documentContext.read("$.[*]");
+        JSONArray page = documentContext.read("$.content[*]");
 
         assertThat(page.size()).isEqualTo(0);
 
