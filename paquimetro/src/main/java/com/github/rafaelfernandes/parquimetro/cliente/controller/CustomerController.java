@@ -73,12 +73,13 @@ public class CustomerController {
                 .build();
     }
 
-    @DeleteMapping("/{requestId}")
-    ResponseEntity<Void> deletar(@PathVariable("requestId") UUID requestId){
-        Boolean deleted = this.customerService.deletar(requestId);
+    @DeleteMapping("/{customerId}")
+    ResponseEntity<Void> delete(@PathVariable("customerId") UUID customerId){
+
+        this.customerService.delete(customerId);
 
         return ResponseEntity
-                .status(deleted ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
+                .status(HttpStatus.NO_CONTENT)
                 .build();
 
     }

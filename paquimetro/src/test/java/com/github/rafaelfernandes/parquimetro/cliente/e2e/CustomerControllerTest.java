@@ -543,13 +543,14 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveDeletarCliente(){
+    @DisplayName("Should Delete Customer")
+    void shouldDeleteCustomer(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        CustomerEntity customer = createNewCustomer();
 
         ResponseEntity<Void> deleteResponse = restTemplate
                 .exchange(
-                        "/customers/" + clienteSalvo.id(),
+                        "/customers/" + customer.id(),
                         HttpMethod.DELETE,
                         null,
                         Void.class
@@ -559,7 +560,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> response = restTemplate
                 .getForEntity(
-                        "/customers/" + clienteSalvo.id(),
+                        "/customers/" + customer.id(),
                         Void.class
                 );
 
@@ -569,7 +570,8 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuantoDeletarEClienteNaoExistir(){
+    @DisplayName("Should Return Not Found When Trying Delete Customer Not Exists")
+    void shouldReturnNotFoundWhenTryingDeleteCustomerNotExists() {
 
         String naoExisteId = faker.internet().uuid();
 

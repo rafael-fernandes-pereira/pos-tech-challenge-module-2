@@ -1,6 +1,5 @@
 package com.github.rafaelfernandes.parquimetro.cliente.service;
 
-import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerNotFoundException;
@@ -82,13 +81,10 @@ public class CustomerService {
 
     }
 
-    public Boolean deletar(UUID requestId) {
-        if (this.repository.existsById(requestId)){
-            this.repository.deleteById(requestId);
-            return Boolean.TRUE;
-        }
+    public void delete(UUID customerId) {
 
-        return Boolean.FALSE;
+        if (!this.repository.existsById(customerId)) throw new CustomerNotFoundException();
 
+        this.repository.deleteById(customerId);
     }
 }
