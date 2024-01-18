@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.unit;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Address;
-import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.github.rafaelfernandes.parquimetro.cliente.validation.ValidacaoRequest;
 import org.junit.jupiter.api.Test;
@@ -157,7 +157,7 @@ public class ValidationTest {
 
     @Test
     void deveRetornarSucesso(){
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
 
         List<String> erros = this.validacaoRequest.cliente(customer);
 

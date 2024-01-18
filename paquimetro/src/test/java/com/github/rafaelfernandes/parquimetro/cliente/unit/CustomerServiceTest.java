@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.unit;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
-import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.ClienteRepository;
@@ -42,7 +42,7 @@ public class CustomerServiceTest {
 
         this.repository.deleteAll();
 
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
 
         CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
@@ -54,9 +54,9 @@ public class CustomerServiceTest {
                 .isInstanceOf(CustomerDuplicateException.class)
                 .hasMessageContaining("Campo document e/ou campo email já existem!");
 
-        String email = GerarCadastro.email();
+        String email = GenerateData.email();
 
-        Long cpf = Long.valueOf(GerarCadastro.cpf());
+        Long cpf = Long.valueOf(GenerateData.cpf());
 
         Customer customerEmail = new Customer(
                 null,
@@ -82,7 +82,7 @@ public class CustomerServiceTest {
                 customer.payment_method(),
                 new Contact(
                         email,
-                        GerarCadastro.celular()
+                        GenerateData.celular()
                 ),
                 customer.cars()
         );

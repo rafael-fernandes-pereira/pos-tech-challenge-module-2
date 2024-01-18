@@ -1,8 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.cliente.service;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
-import com.github.rafaelfernandes.parquimetro.cliente.dto.MessageDTO;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerNotFoundException;
@@ -15,14 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
@@ -70,15 +65,20 @@ public class CustomerService {
 
     }
 
-    public Boolean alterar(UUID requestId, Customer customer){
+    public void update(UUID customerId, Customer customer){
 
-        if (this.repository.existsById(requestId)){
-            CustomerEntity entity = ClienteDto.from(customer, Boolean.FALSE);
+        if (!this.repository.existsById(customerId)) throw new CustomerNotFoundException();
+
+        try {
+
+            CustomerEntity entity = CustomerEntity.from(customer, Boolean.FALSE);
             this.repository.save(entity);
-            return Boolean.TRUE;
-        }
 
-        return Boolean.FALSE;
+        } catch (DuplicateKeyException ex) {
+
+            throw new CustomerDuplicateException();
+
+        }
 
     }
 

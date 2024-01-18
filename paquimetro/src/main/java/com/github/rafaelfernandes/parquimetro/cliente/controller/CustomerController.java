@@ -1,7 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.cliente.controller;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCarros;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageCliente;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.MessageFormaPagamento;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CarroService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
@@ -29,10 +28,10 @@ public class CustomerController {
 
     @Autowired private FormaPagamentoService formaPagamentoService;
 
-    @GetMapping("/{requestId}")
-    private ResponseEntity<Customer> findById(@PathVariable final UUID requestId){
+    @GetMapping("/{customerId}")
+    private ResponseEntity<Customer> findById(@PathVariable final UUID customerId){
 
-        Customer customer = this.customerService.findBydId(requestId);
+        Customer customer = this.customerService.findBydId(customerId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -64,13 +63,13 @@ public class CustomerController {
                 .body(this.customerService.getAll(pageable));
     }
 
-    @PutMapping("/{requestId}")
-    ResponseEntity<Void> alterar(@PathVariable UUID requestId, @RequestBody Customer customer){
+    @PutMapping("/{customerId}")
+    ResponseEntity<Void> update(@PathVariable UUID customerId, @RequestBody Customer customer){
 
-        Boolean updated = this.customerService.alterar(requestId, customer);
+        this.customerService.update(customerId, customer);
 
         return ResponseEntity
-                .status(updated ? HttpStatus.NO_CONTENT : HttpStatus.NOT_FOUND)
+                .status(HttpStatus.NO_CONTENT)
                 .build();
     }
 

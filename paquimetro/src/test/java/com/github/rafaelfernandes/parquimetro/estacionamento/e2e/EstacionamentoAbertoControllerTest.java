@@ -13,7 +13,7 @@ import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
 import com.github.rafaelfernandes.parquimetro.util.ClienteCarro;
-import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -76,7 +76,7 @@ public class EstacionamentoAbertoControllerTest {
 
     @NotNull
     private ClienteCarro cadastrarNovoCliente() {
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
         CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
         CustomerEntity clienteSalvoEntity = clienteRepository.save(customerEntity);

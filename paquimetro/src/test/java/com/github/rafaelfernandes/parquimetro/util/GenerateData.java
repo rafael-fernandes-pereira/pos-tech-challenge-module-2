@@ -12,13 +12,13 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
-public class GerarCadastro {
+public class GenerateData {
 
     private static final Faker faker = new Faker(new Locale("pt", "BR"));
 
     private static final Random random = new Random();
 
-    public static Customer cliente(Boolean novo){
+    public static Customer customer(Boolean novo){
 
         Integer randFormaDePagamento = random.nextInt(0, 2);
         PaymentMethod paymentMethod = PaymentMethod.values()[randFormaDePagamento];
@@ -50,7 +50,7 @@ public class GerarCadastro {
     public static List<String> placas(){
 
         return faker.collection(
-                        GerarCadastro::placa)
+                        GenerateData::placa)
                 .len(1, 5)
                 .generate();
 

@@ -1,7 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.cliente.unit;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
-import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ public class CustomerDtoTest {
     @Test
     void retornaClienteNovoEntityComSucesso(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
 
         CustomerEntity entity = ClienteDto.from(customer, Boolean.TRUE);
 

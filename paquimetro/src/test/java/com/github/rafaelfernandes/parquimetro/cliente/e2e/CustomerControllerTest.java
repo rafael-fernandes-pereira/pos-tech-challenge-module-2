@@ -1,8 +1,9 @@
 package com.github.rafaelfernandes.parquimetro.cliente.e2e;
 
+import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
-import com.github.rafaelfernandes.parquimetro.util.GerarCadastro;
+import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.State;
@@ -61,8 +62,8 @@ public class CustomerControllerTest {
     }
 
     @NotNull
-    private CustomerEntity cadastrarNovoCliente() {
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+    private CustomerEntity createNewCustomer() {
+        Customer customer = GenerateData.customer(Boolean.TRUE);
         CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
         return repository.save(customerEntity);
@@ -71,7 +72,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
         String requestId = clienteSalvo.id().toString();
 
@@ -163,7 +164,7 @@ public class CustomerControllerTest {
     @Test
     void deveCadastrarUmNovoCliente(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
@@ -219,7 +220,7 @@ public class CustomerControllerTest {
     @DisplayName("Should Return Duplicate Data When Create New Customer Has Exists")
     void shouldReturnDuplicateDataWhenCreateNewCustomerHasExists(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
@@ -256,7 +257,7 @@ public class CustomerControllerTest {
         List<CustomerEntity> clienteEntities = new ArrayList<>();
 
         for (int i =1; i <= 100; i++){
-            Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+            Customer customer = GenerateData.customer(Boolean.TRUE);
             CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
             clienteEntities.add(customerEntity);
         }
@@ -289,7 +290,7 @@ public class CustomerControllerTest {
 
         while (continueLoop){
 
-            Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+            Customer customer = GenerateData.customer(Boolean.TRUE);
             CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
             Boolean isEmpty = clienteEntities.stream()
@@ -339,7 +340,7 @@ public class CustomerControllerTest {
 
         while (continueLoop){
 
-            Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+            Customer customer = GenerateData.customer(Boolean.TRUE);
             CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
             Boolean isEmpty = clienteEntities.stream()
@@ -380,17 +381,17 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveAlterarDados(){
+    void shouldUpdateCustomer(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity customerSaved = createNewCustomer();
 
-        Customer customer = Customer.from(clienteSalvo);
+        Customer customer = Customer.from(customerSaved);
 
-        String nome = faker.name().fullName();
+        String name = faker.name().fullName();
 
         Customer customerUpdate = new Customer(
-                clienteSalvo.id(),
-                nome,
+                customerSaved.id(),
+                name,
                 customer.document(),
                 customer.address(),
                 customer.payment_method(),
@@ -402,7 +403,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/customers/" + clienteSalvo.id(),
+                        "/customers/" + customerSaved.id(),
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -412,7 +413,7 @@ public class CustomerControllerTest {
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
-                        "/customers/" + clienteSalvo.id(),
+                        "/customers/" + customerSaved.id(),
                         String.class
                 );
 
@@ -423,23 +424,24 @@ public class CustomerControllerTest {
         String id = documentContext.read("$.id");
         String nomeSaved =  documentContext.read("$.name");
 
-        assertThat(id).isEqualTo(clienteSalvo.id().toString());
-        assertThat(nomeSaved).isEqualTo(nome);
+        assertThat(id).isEqualTo(customerSaved.id().toString());
+        assertThat(nomeSaved).isEqualTo(name);
 
     }
 
     @Test
-    void deveRetornarNotFoundAoAlterar(){
+    @DisplayName("Should Return Not Found When Customer Not Exists Updating Data")
+    void shouldReturnNotFoundWhenCustomerNotExistsUpdatingData(){
 
-        String naoExisteId = faker.internet().uuid();
+        String notExistsId = faker.internet().uuid();
 
-        Customer customer = GerarCadastro.cliente(Boolean.TRUE);
+        Customer customer = GenerateData.customer(Boolean.TRUE);
 
         HttpEntity<Customer> request = new HttpEntity<>(customer);
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
-                        "/customers/" + naoExisteId,
+                        "/customers/" + notExistsId,
                         HttpMethod.PUT,
                         request,
                         Void.class
@@ -450,9 +452,100 @@ public class CustomerControllerTest {
     }
 
     @Test
+    @DisplayName("Should Return Duplicate When Updating Customer Using Emails Other People")
+    void shouldReturnDuplicateWhenUpdatingEmailOtherPeople(){
+
+        CustomerEntity customerOriginalEmail = createNewCustomer();
+
+        String emailOtherPeople = customerOriginalEmail.contact().email();
+
+        CustomerEntity customerSaved = createNewCustomer();
+
+        Customer customer = Customer.from(customerSaved);
+
+        Customer customerUpdate = new Customer(
+                customerSaved.id(),
+                customer.name(),
+                customer.document(),
+                customer.address(),
+                customer.payment_method(),
+                new Contact(
+                        emailOtherPeople,
+                        customer.contact().cellphone()
+                ),
+                customer.cars()
+        );
+
+        HttpEntity<Customer> request = new HttpEntity<>(customerUpdate);
+
+        ResponseEntity<String> responseUpdate = restTemplate
+                .exchange(
+                        "/customers/" + customerUpdate.id(),
+                        HttpMethod.PUT,
+                        request,
+                        String.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+
+        DocumentContext documentContext = JsonPath.parse(responseUpdate.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Campo document e/ou campo email já existem!"))
+        ;
+
+    }
+
+    @Test
+    @DisplayName("Should Return Duplicate When Updating Customer Using Document From Other People")
+    void shouldReturnDuplicateWhenUpdatingDocumentOtherPeople(){
+
+        CustomerEntity customerOriginalEmail = createNewCustomer();
+
+        Long documentOtherPeople = customerOriginalEmail.document();
+
+        CustomerEntity customerSaved = createNewCustomer();
+
+        Customer customer = Customer.from(customerSaved);
+
+        Customer customerUpdate = new Customer(
+                customerSaved.id(),
+                customer.name(),
+                documentOtherPeople,
+                customer.address(),
+                customer.payment_method(),
+                customer.contact(),
+                customer.cars()
+        );
+
+        HttpEntity<Customer> request = new HttpEntity<>(customerUpdate);
+
+        ResponseEntity<String> responseUpdate = restTemplate
+                .exchange(
+                        "/customers/" + customerUpdate.id(),
+                        HttpMethod.PUT,
+                        request,
+                        String.class
+                );
+
+        assertThat(responseUpdate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+
+        DocumentContext documentContext = JsonPath.parse(responseUpdate.getBody());
+
+        List<String> errors = documentContext.read("$.errors");
+
+        assertThat(errors)
+                .anyMatch(erro -> erro.equalsIgnoreCase("Campo document e/ou campo email já existem!"))
+        ;
+
+    }
+
+    @Test
     void deveDeletarCliente(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
         ResponseEntity<Void> deleteResponse = restTemplate
                 .exchange(
@@ -495,9 +588,9 @@ public class CustomerControllerTest {
     @Test
     void deveAdicionarCarro(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
-        String placa = GerarCadastro.placa();
+        String placa = GenerateData.placa();
 
         List<String> carros = new ArrayList<>();
 
@@ -540,7 +633,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarBadRequestQuandoNaoEnviaCarros(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.FALSE);
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
         HttpEntity<List<String>> request = new HttpEntity<>(new ArrayList<>());
 
@@ -559,9 +652,9 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarAtualizar(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.FALSE);
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
-        List<String> carros = GerarCadastro.placas();
+        List<String> carros = GenerateData.placas();
 
         HttpEntity<List<String>> request = new HttpEntity<>(carros);
 
@@ -580,7 +673,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarCarros(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
@@ -601,7 +694,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarObter(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.FALSE);
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
@@ -616,7 +709,7 @@ public class CustomerControllerTest {
     @Test
     void deveDeletarCarro(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
         String carro = clienteSalvo.cars().get(0);
 
@@ -649,7 +742,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarExluir(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
         String carro = "AABBCCD";
 
@@ -670,9 +763,9 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarNotFoundQuandoCarroNaoExisteAoTentarExluir(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.FALSE);
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
-        String carro = GerarCadastro.placa();
+        String carro = GenerateData.placa();
 
         ResponseEntity<Void> responseUpdate = restTemplate
                 .exchange(
@@ -689,7 +782,7 @@ public class CustomerControllerTest {
     @Test
     void deveAlterarFormaDePagamento(){
 
-        CustomerEntity customerEntity = cadastrarNovoCliente();
+        CustomerEntity customerEntity = createNewCustomer();
 
         PaymentMethod[] paymentMethods = PaymentMethod.values();
 
@@ -733,7 +826,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarNotFoundQuandoClienteNaoExiste(){
 
-        Customer customer = GerarCadastro.cliente(Boolean.FALSE);
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
         HttpEntity<String> request = new HttpEntity<>(PaymentMethod.PIX.name());
 
@@ -753,7 +846,7 @@ public class CustomerControllerTest {
     @Test
     void deveRetornarBadRequestQuandoClienteNaoExiste(){
 
-        CustomerEntity cliente = cadastrarNovoCliente();
+        CustomerEntity cliente = createNewCustomer();
         HttpEntity<String> request = new HttpEntity<>("DOC_TED");
 
         ResponseEntity<Void> responseUpdate = restTemplate
@@ -771,7 +864,7 @@ public class CustomerControllerTest {
     @Test
     void deveObterFormaPagamento(){
 
-        CustomerEntity clienteSalvo = cadastrarNovoCliente();
+        CustomerEntity clienteSalvo = createNewCustomer();
 
         PaymentMethod paymentMethod = clienteSalvo.payment_method();
 
@@ -793,7 +886,7 @@ public class CustomerControllerTest {
 
     @Test
     void deveRetornarNotFoundQuandoTentarObterFormaPagamentoDEClienteNaoExistente(){
-        Customer customer = GerarCadastro.cliente(Boolean.FALSE);
+        Customer customer = GenerateData.customer(Boolean.FALSE);
 
         ResponseEntity<String> response = restTemplate
                 .getForEntity(
