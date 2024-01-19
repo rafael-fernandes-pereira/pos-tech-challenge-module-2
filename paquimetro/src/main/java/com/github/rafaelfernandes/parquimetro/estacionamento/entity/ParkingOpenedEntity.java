@@ -36,7 +36,7 @@ public record ParkingOpenedEntity(
                         ),
                         customer.payment_method(),
                         parkingType,
-                        parkingType.equals(ParkingType.FIXO) ? duracao : null,
+                        parkingType.equals(ParkingType.FIX) ? duracao : null,
                         LocalDateTime.now()
                 );
 

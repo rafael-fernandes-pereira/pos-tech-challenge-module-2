@@ -6,11 +6,11 @@ import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.PaymentMethodService;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.FixTime;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
-import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
+import com.github.rafaelfernandes.parquimetro.estacionamento.service.ParkingService;
 import com.github.rafaelfernandes.parquimetro.util.CustomerCar;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
@@ -62,7 +62,7 @@ public class ParkingControllerTest {
     private PaymentMethodService paymentMethodService;
 
     @Autowired
-    private EstacionamentoService estacionamentoService;
+    private ParkingService parkingService;
 
     @Autowired
     private EstacionamentoAbertoRepository estacionamentoAbertoRepository;
@@ -91,7 +91,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.estacionamentoService.registrar(ParkingType.FIXO, customerCar.customer().id(), customerCar.carro(), 3);
+        this.parkingService.registrar(ParkingType.FIX, customerCar.customer().id(), customerCar.carro(), 3);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -117,7 +117,7 @@ public class ParkingControllerTest {
 
         String parkingType = documentContext.read("$.parking_type");
 
-        assertThat(parkingType).isEqualTo(ParkingType.FIXO.name());
+        assertThat(parkingType).isEqualTo(ParkingType.FIX.name());
 
         Integer duration = documentContext.read("$.duration");
 
@@ -183,12 +183,12 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        Fixo fixo = new Fixo(3);
+        FixTime fixTime = new FixTime(3);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
-                        fixo,
+                        fixTime,
                         Void.class
                 );
 
@@ -207,15 +207,15 @@ public class ParkingControllerTest {
     }
 
     @Test
-    @DisplayName("Should return customer not found when register park fix")
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should return customer not found when register park fix")
     void shouldReturnCustomerNotFoundWhenRegisterParkFix(){
 
-        Fixo fixo = new Fixo(3);
+        FixTime fixTime = new FixTime(3);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + UUID.randomUUID() + "/AABBCCD/fixo",
-                        fixo,
+                        "/parking/" + UUID.randomUUID() + "/AABBCCD/fix",
+                        fixTime,
                         String.class
                 );
 
@@ -233,16 +233,17 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoPlacaNaoExisteAoTentarRegistrarTempoFixo(){
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should Return Not Found When Car Not Exists In Customer On Register Fix Time")
+    void shouldReturnNotFoundWhenCarNotExistsInCustomerOnRegisterFixTime(){
 
         CustomerCar customerCar = createNewCustomer();
 
-        Fixo fixo = new Fixo(3);
+        FixTime fixTime = new FixTime(3);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/AABBCCD/fixo",
-                        fixo,
+                        "/parking/" + customerCar.customer().id() + "/AABBCCD/fix",
+                        fixTime,
                         String.class
                 );
 
@@ -250,10 +251,10 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não cadastrado para esse cliente"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não existe para esse cliente"))
 
         ;
 
@@ -263,12 +264,12 @@ public class ParkingControllerTest {
     void deveRetonarDuplicidadeQUandoTentaRegistrarTempoFixoEUmaMesmaPlaca(){
         CustomerCar customerCar = createNewCustomer();
 
-        Fixo fixo = new Fixo(3);
+        FixTime fixTime = new FixTime(3);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
-                        fixo,
+                        fixTime,
                         Void.class
                 );
 
@@ -278,7 +279,7 @@ public class ParkingControllerTest {
         ResponseEntity<String> createResponseDuplicate = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
-                        fixo,
+                        fixTime,
                         String.class
                 );
 
@@ -296,15 +297,16 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetonarBadREquestQuandoEnviaDuracaoZeroOuMenorParaFixo(){
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should Return Bad Request When Duration Is Less Or Equals Zero To Fix Time")
+    void shouldReturnBadRequestWhenDurationIsLessOrEqualsZeroToFixTime(){
         CustomerCar customerCar = createNewCustomer();
 
-        Fixo fixo = new Fixo(0);
+        FixTime fixTime = new FixTime(0);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
-                        fixo,
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fix",
+                        fixTime,
                         String.class
                 );
 
@@ -313,19 +315,19 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Tempo mínimo de 1 hora"))
 
         ;
 
-        fixo = new Fixo(-1);
+        fixTime = new FixTime(-1);
 
         createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
-                        fixo,
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fix",
+                        fixTime,
                         String.class
                 );
 
@@ -334,7 +336,7 @@ public class ParkingControllerTest {
 
         documentContext = JsonPath.parse(createResponse.getBody());
 
-        erros = documentContext.read("$.erros");
+        erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Tempo mínimo de 1 hora"))
@@ -400,12 +402,12 @@ public class ParkingControllerTest {
     @Test
     void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarRegistrarTempoHora(){
 
-        Fixo fixo = new Fixo(3);
+        FixTime fixTime = new FixTime(3);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + UUID.randomUUID() + "/AABBCCD/hora",
-                        fixo,
+                        fixTime,
                         String.class
                 );
 
@@ -427,12 +429,12 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        Fixo fixo = new Fixo(3);
+        FixTime fixTime = new FixTime(3);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + customerCar.customer().id() + "/AABBCCD/hora",
-                        fixo,
+                        fixTime,
                         String.class
                 );
 
@@ -491,12 +493,12 @@ public class ParkingControllerTest {
 
         this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
-        Fixo fixo = new Fixo(0);
+        FixTime fixTime = new FixTime(0);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
-                        fixo,
+                        fixTime,
                         String.class
                 );
 
@@ -511,12 +513,12 @@ public class ParkingControllerTest {
 
         this.estacionamentoAbertoRepository.deleteAll();
 
-        fixo = new Fixo(-1);
+        fixTime = new FixTime(-1);
 
         createResponse = this.restTemplate
                 .postForEntity(
                         "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
-                        fixo,
+                        fixTime,
                         String.class
                 );
 
@@ -549,7 +551,7 @@ public class ParkingControllerTest {
                         customerCar.customer().contact().cellphone()
                 ),
                 customerCar.customer().payment_method(),
-                ParkingType.FIXO,
+                ParkingType.FIX,
                 2,
                 LocalDateTime.now().minusHours(2L)
         );
@@ -631,7 +633,7 @@ public class ParkingControllerTest {
                         customerCar.customer().contact().cellphone()
                 ),
                 customerCar.customer().payment_method(),
-                ParkingType.FIXO,
+                ParkingType.FIX,
                 2,
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
         );
@@ -712,7 +714,7 @@ public class ParkingControllerTest {
                         customerCar.customer().contact().cellphone()
                 ),
                 customerCar.customer().payment_method(),
-                ParkingType.HORA,
+                ParkingType.HOUR,
                 null,
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
         );

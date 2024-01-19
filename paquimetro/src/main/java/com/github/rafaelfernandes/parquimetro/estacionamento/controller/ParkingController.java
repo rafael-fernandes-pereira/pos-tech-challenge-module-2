@@ -1,11 +1,11 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.controller;
 
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.Fixo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.FixTime;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.MessageEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
-import com.github.rafaelfernandes.parquimetro.estacionamento.service.EstacionamentoService;
+import com.github.rafaelfernandes.parquimetro.estacionamento.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,30 +18,30 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/parking")
-public class EstacionamentoController {
+public class ParkingController {
 
-    @Autowired private EstacionamentoService estacionamentoService;
+    @Autowired private ParkingService parkingService;
 
     @GetMapping("/{customerId}/{car}/opened")
     ResponseEntity<ParkingOpened> getOpened(@PathVariable UUID customerId, @PathVariable String car){
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.estacionamentoService.getOpenedByCustomerIdAndCar(customerId, car));
+                .body(this.parkingService.getOpenedByCustomerIdAndCar(customerId, car));
 
     }
 
-    @PostMapping("/{requestId}/{car}/fixo")
-    ResponseEntity<MessageAberto> registrarFixo(@PathVariable UUID requestId,
-                                                @PathVariable String carro,
-                                                @RequestBody Fixo fixo,
-                                                UriComponentsBuilder uriComponentsBuilder){
+    @PostMapping("/{customerId}/{car}/fix")
+    ResponseEntity<MessageAberto> createParkingFix(@PathVariable UUID customerId,
+                                                   @PathVariable String car,
+                                                   @RequestBody FixTime fixTime,
+                                                   UriComponentsBuilder uriComponentsBuilder){
 
-        MessageAberto messageAberto = this.estacionamentoService.registrar(ParkingType.FIXO, requestId, carro, fixo.duracao_fixa());
+        MessageAberto messageAberto = this.parkingService.registrar(ParkingType.FIX, customerId, car, fixTime.duration());
 
         URI location = uriComponentsBuilder
-                .path("estacionamento/{requestId}/{car}/aberto")
-                .buildAndExpand(requestId, carro)
+                .path("estacionamento/{requestId}/{car}/opened")
+                .buildAndExpand(customerId, car)
                 .toUri();
 
         return ResponseEntity
@@ -53,7 +53,7 @@ public class EstacionamentoController {
     @PostMapping("/{requestId}/{car}/hora")
     ResponseEntity<MessageAberto> registrarHora(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
 
-        MessageAberto messageAberto = this.estacionamentoService.registrar(ParkingType.HORA, requestId, carro, null);
+        MessageAberto messageAberto = this.parkingService.registrar(ParkingType.HOUR, requestId, carro, null);
 
         URI location = uriComponentsBuilder
                 .path("estacionamento/{requestId}/{car}/aberto")
@@ -69,7 +69,7 @@ public class EstacionamentoController {
     @PostMapping("/{requestId}/{car}/finalizar")
     ResponseEntity<MessageEncerrado> finalizar(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
 
-        MessageEncerrado messageEncerrado = this.estacionamentoService.finalizar(requestId, carro);
+        MessageEncerrado messageEncerrado = this.parkingService.finalizar(requestId, carro);
 
         if (!messageEncerrado.erros().isEmpty()) {
             return ResponseEntity
@@ -95,7 +95,7 @@ public class EstacionamentoController {
     @GetMapping("/{requestId}/encerrado")
     ResponseEntity<MessageEncerrado> obterDadosEncerrado(@PathVariable UUID requestId){
 
-        MessageEncerrado estacionamento = this.estacionamentoService.obterEncerrado(requestId);
+        MessageEncerrado estacionamento = this.parkingService.obterEncerrado(requestId);
 
         return ResponseEntity
                 .status(estacionamento.http_status_code())

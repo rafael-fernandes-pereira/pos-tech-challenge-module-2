@@ -2,6 +2,7 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.service;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
+import com.github.rafaelfernandes.parquimetro.cliente.exception.CarNotFoundException;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
@@ -13,6 +14,7 @@ import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpene
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEncerradoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEnvioRecibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEncerradoRepository;
@@ -30,7 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class EstacionamentoService {
+public class ParkingService {
 
     @Autowired
     EstacionamentoAbertoRepository estacionamentoAbertoRepository;
@@ -56,22 +58,21 @@ public class EstacionamentoService {
     @Value("${estacionamento.valor.hora.restante}")
     Double valorRestanteHora;
 
-    public MessageAberto registrar(ParkingType parkingType, UUID clienteId, String carro, Integer duracao){
+    public MessageAberto registrar(ParkingType parkingType, UUID customerId, String car, Integer duration){
 
-        if (parkingType.equals(ParkingType.FIXO) && (duracao == null || duracao <= 0))
-            return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Tempo mínimo de 1 hora");
+        if (parkingType.equals(ParkingType.FIX) && (duration == null || duration <= 0))
+            throw new ParkingMinimumDuration1HourException();
 
-        Customer customer = this.customerService.findBydId(clienteId);
+        Customer customer = this.customerService.findBydId(customerId);
 
-        if (!customer.cars().contains(carro))
-            return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, "Carro não cadastrado para esse cliente");
+        if (!customer.cars().contains(car)) throw new CarNotFoundException();
 
-        if (parkingType.equals(ParkingType.HORA) && customer.payment_method().equals(PaymentMethod.PIX))
+        if (parkingType.equals(ParkingType.HOUR) && customer.payment_method().equals(PaymentMethod.PIX))
             return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Forma de pagamento não permitido para o tipo de periodo escolhido!");
 
         try {
 
-            ParkingOpenedEntity estacionamentoAberto = ParkingOpenedEntity.novo(customer, carro, parkingType, duracao);
+            ParkingOpenedEntity estacionamentoAberto = ParkingOpenedEntity.novo(customer, car, parkingType, duration);
 
             ParkingOpenedEntity salvo = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
 
@@ -105,7 +106,7 @@ public class EstacionamentoService {
 
         Duration duration = Duration.between(parkingOpened.start(), fim);
 
-        if (ParkingType.FIXO.equals(parkingOpened.parking_type())){
+        if (ParkingType.FIX.equals(parkingOpened.parking_type())){
 
             valor = new BigDecimal(parkingOpened.duration())
                     .multiply(new BigDecimal(this.valorFixo))

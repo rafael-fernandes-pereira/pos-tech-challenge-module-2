@@ -2,6 +2,7 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.controller;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.CustomerError;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.*;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,17 @@ public class ParkingExceptionHandler {
                 .body(new CustomerError(exception.getErrors()));
     }
 
-    @ExceptionHandler({CustomerValidationException.class})
-    public ResponseEntity<CustomerError> customerErrorValidation(CustomerValidationException exception){
+    @ExceptionHandler({ParkingMinimumDuration1HourException.class})
+    public ResponseEntity<CustomerError> parkingMinimumDuration1Hour(ParkingMinimumDuration1HourException exception){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(new CustomerError(exception.getErrors()));
+    }
+
+    @ExceptionHandler({CustomerNotFoundException.class})
+    public ResponseEntity<CustomerError> customerNotFound(CustomerNotFoundException exception){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(new CustomerError(exception.getErrors()));
     }
 
