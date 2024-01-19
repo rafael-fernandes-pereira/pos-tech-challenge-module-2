@@ -39,7 +39,7 @@ public class CustomerController {
     }
 
     @PostMapping("/")
-    private ResponseEntity<Customer> createCustomer(@RequestBody final Customer customer, UriComponentsBuilder uriComponentsBuilder){
+    private ResponseEntity<Void> createCustomer(@RequestBody final Customer customer, UriComponentsBuilder uriComponentsBuilder){
 
         Customer customerSaved = this.customerService.create(customer);
 
@@ -51,7 +51,7 @@ public class CustomerController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(customerSaved);
+                .build();
 
     }
 

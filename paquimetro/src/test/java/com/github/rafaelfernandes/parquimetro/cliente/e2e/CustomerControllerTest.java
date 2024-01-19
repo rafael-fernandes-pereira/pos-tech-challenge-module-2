@@ -72,11 +72,12 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarDadosDeUmClienteQuandoExistirNaBase(){
+    @DisplayName("GET /customer/customerId -> Should Return Customer")
+    void shouldReturnCustomer(){
 
-        CustomerEntity clienteSalvo = createNewCustomer();
+        CustomerEntity customerSaved = createNewCustomer();
 
-        String requestId = clienteSalvo.id().toString();
+        String requestId = customerSaved.id().toString();
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -89,48 +90,48 @@ public class CustomerControllerTest {
         DocumentContext documentContext = JsonPath.parse(response.getBody());
 
         String id = documentContext.read("$.id");
-        assertEquals(clienteSalvo.id().toString(), id);
+        assertEquals(customerSaved.id().toString(), id);
 
         String nome = documentContext.read("$.name");
-        assertEquals(clienteSalvo.name(), nome);
+        assertEquals(customerSaved.name(), nome);
 
         Long documento = documentContext.read("$.document");
-        assertEquals(clienteSalvo.document(), documento);
+        assertEquals(customerSaved.document(), documento);
 
         String logradouro = documentContext.read("$.address.public_area");
-        assertEquals(clienteSalvo.address().public_area(), logradouro);
+        assertEquals(customerSaved.address().public_area(), logradouro);
 
         Integer numero = documentContext.read("$.address.number");
-        assertEquals(clienteSalvo.address().number(), numero);
+        assertEquals(customerSaved.address().number(), numero);
 
         String complemento = documentContext.read("$.address.additional_address_details");
-        assertEquals(clienteSalvo.address().additional_address_details(), complemento);
+        assertEquals(customerSaved.address().additional_address_details(), complemento);
 
         String bairro = documentContext.read("$.address.neighborhood");
-        assertEquals(clienteSalvo.address().neighborhood(), bairro);
+        assertEquals(customerSaved.address().neighborhood(), bairro);
 
         String cidade = documentContext.read("$.address.city");
-        assertEquals(clienteSalvo.address().city(), cidade);
+        assertEquals(customerSaved.address().city(), cidade);
 
         State estado = State.valueOf(documentContext.read("$.address.state"));
-        assertEquals(clienteSalvo.address().state(), estado);
+        assertEquals(customerSaved.address().state(), estado);
 
         String formaPagamento = documentContext.read("$.payment_method");
-        assertEquals(clienteSalvo.paymentMethod().toString(), formaPagamento);
+        assertEquals(customerSaved.paymentMethod().toString(), formaPagamento);
 
         String email = documentContext.read("$.contact.email");
-        assertEquals(clienteSalvo.contact().email(), email);
+        assertEquals(customerSaved.contact().email(), email);
 
         String telefone = documentContext.read("$.contact.cellphone");
-        assertEquals(clienteSalvo.contact().celphone(), telefone);
+        assertEquals(customerSaved.contact().celphone(), telefone);
 
         List<String> carros = documentContext.read("$.cars");
-        assertEquals(clienteSalvo.cars(), carros);
+        assertEquals(customerSaved.cars(), carros);
 
     }
 
     @Test
-    @DisplayName("Should return not found when customer not exists")
+    @DisplayName("GET /customers/customerId -> Should return not found when customer not exists")
     void shouldReturnNotFoundWhenCustomerNotExists(){
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -152,7 +153,8 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarBadRequestQuandoNaoPassarUUID(){
+    @DisplayName("GET /customers/customerId -> Should Return Bad Request When Dont Send UUID")
+    void shouldReturnBadRequestWhenDontSendUUID(){
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
                         "/customers/99",
@@ -164,7 +166,8 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveCadastrarUmNovoCliente(){
+    @DisplayName("POST /customers/ -> Should Create New Customer")
+    void shouldCreateNewCustomer(){
 
         Customer customer = GenerateData.customer(Boolean.TRUE);
 
@@ -189,7 +192,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should return bad request when try register new customer sending data null")
+    @DisplayName("POST /customers/ -> Should return bad request when try register new customer sending data null")
     void shouldReturnBadRequestWhenTryRegisterNewCustomerSendingDataNull(){
 
         Customer customer = new Customer(null, null, null, null, null, null, null);
@@ -219,7 +222,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Duplicate Data When Create New Customer Has Exists")
+    @DisplayName("POST /customers/ -> Should Return Duplicate Data When Create New Customer Has Exists")
     void shouldReturnDuplicateDataWhenCreateNewCustomerHasExists(){
 
         Customer customer = GenerateData.customer(Boolean.TRUE);
@@ -254,17 +257,18 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarComQuantidadePadrao(){
+    @DisplayName("GET /customers -> Should Return All Customers With Default Size")
+    void shouldReturnAllCustomersWithDefaultSize(){
 
-        List<CustomerEntity> clienteEntities = new ArrayList<>();
+        List<CustomerEntity> customers = new ArrayList<>();
 
         for (int i =1; i <= 100; i++){
             Customer customer = GenerateData.customer(Boolean.TRUE);
-            CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
-            clienteEntities.add(customerEntity);
+            CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
+            customers.add(customerEntity);
         }
 
-        repository.saveAll(clienteEntities);
+        repository.saveAll(customers);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -283,9 +287,10 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarComQuantidadeMaxima(){
+    @DisplayName("GET /customers -> Should Return Customers With Max Results")
+    void shouldReturnCustomersWithMaxResults(){
 
-        List<CustomerEntity> clienteEntities = new ArrayList<>();
+        List<CustomerEntity> customers = new ArrayList<>();
 
         Boolean continueLoop = Boolean.TRUE;
         Integer i = 1;
@@ -295,7 +300,7 @@ public class CustomerControllerTest {
             Customer customer = GenerateData.customer(Boolean.TRUE);
             CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
-            Boolean isEmpty = clienteEntities.stream()
+            Boolean isEmpty = customers.stream()
                     .filter(clienteEntity1 ->
                         clienteEntity1.document().equals(customerEntity.document()) ||
                         clienteEntity1.contact().email().equals(customerEntity.contact().email())
@@ -309,12 +314,11 @@ public class CustomerControllerTest {
             i++;
             if (i > 2000) continueLoop = Boolean.FALSE;
 
-            clienteEntities.add(customerEntity);
-
+            customers.add(customerEntity);
 
         }
 
-        repository.saveAll(clienteEntities);
+        repository.saveAll(customers);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -333,9 +337,10 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarNadaNaPagina1(){
+    @DisplayName("GET /customers/ -> Should Return Nothing On Page One")
+    void shouldReturnNothingOnPageOne(){
 
-        List<CustomerEntity> clienteEntities = new ArrayList<>();
+        List<CustomerEntity> customers = new ArrayList<>();
 
         Boolean continueLoop = Boolean.TRUE;
         Integer i = 1;
@@ -345,7 +350,7 @@ public class CustomerControllerTest {
             Customer customer = GenerateData.customer(Boolean.TRUE);
             CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
 
-            Boolean isEmpty = clienteEntities.stream()
+            Boolean isEmpty = customers.stream()
                     .filter(clienteEntity1 ->
                             clienteEntity1.document().equals(customerEntity.document()) ||
                                     clienteEntity1.contact().email().equals(customerEntity.contact().email())
@@ -359,12 +364,12 @@ public class CustomerControllerTest {
             i++;
             if (i > 10) continueLoop = Boolean.FALSE;
 
-            clienteEntities.add(customerEntity);
+            customers.add(customerEntity);
 
 
         }
 
-        repository.saveAll(clienteEntities);
+        repository.saveAll(customers);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -383,6 +388,7 @@ public class CustomerControllerTest {
     }
 
     @Test
+    @DisplayName("PUT /customers/customerId -> Should Update Customer")
     void shouldUpdateCustomer(){
 
         CustomerEntity customerSaved = createNewCustomer();
@@ -432,7 +438,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Not Found When Customer Not Exists Updating Data")
+    @DisplayName("PUT /customers/customerId -> Should Return Not Found When Customer Not Exists Updating Data")
     void shouldReturnNotFoundWhenCustomerNotExistsUpdatingData(){
 
         String notExistsId = faker.internet().uuid();
@@ -454,7 +460,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Duplicate When Updating Customer Using Emails Other People")
+    @DisplayName("PUT /customers/customerId -> Should Return Duplicate When Updating Customer Using Emails Other People")
     void shouldReturnDuplicateWhenUpdatingEmailOtherPeople(){
 
         CustomerEntity customerOriginalEmail = createNewCustomer();
@@ -501,7 +507,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Duplicate When Updating Customer Using Document From Other People")
+    @DisplayName("PUT /customers/customerId -> Should Return Duplicate When Updating Customer Using Document From Other People")
     void shouldReturnDuplicateWhenUpdatingDocumentOtherPeople(){
 
         CustomerEntity customerOriginalEmail = createNewCustomer();
@@ -545,7 +551,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Delete Customer")
+    @DisplayName("DELETE /customers/customerId -> Should Delete Customer")
     void shouldDeleteCustomer(){
 
         CustomerEntity customer = createNewCustomer();
@@ -572,7 +578,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Not Found When Trying Delete Customer Not Exists")
+    @DisplayName("DELETE /customers/customerId Should Return Not Found When Trying Delete Customer Not Exists")
     void shouldReturnNotFoundWhenTryingDeleteCustomerNotExists() {
 
         String customerNotExistsId = faker.internet().uuid();
@@ -598,7 +604,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Add New Car In Customer")
+    @DisplayName("PUT /customer/customerId/cars -> Should Add New Car In Customer")
     void shouldAddNewCarInCustomer(){
 
         CustomerEntity newCustomer = createNewCustomer();
@@ -644,7 +650,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Bad Request When Add Car Empty")
+    @DisplayName("PUT /customers/customerId/car -> Should Return Bad Request When Add Car Empty")
     void shouldReturnBadRequestWhenAddCarEmpty(){
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
@@ -672,7 +678,8 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarAtualizar(){
+    @DisplayName("PUT /customers/customerId/cars -> Should Return Not Found When Add New Car On Customer Not Exists")
+    void shouldReturnNotFoundWhenAddNewCarOnCustomerNotExists(){
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
 
@@ -701,7 +708,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return All Cars From Customer")
+    @DisplayName("GET /customers/customerId -> Should Return All Cars From Customer")
     void shouldReturnAllCarsFromCustomer(){
 
         CustomerEntity customerSaved = createNewCustomer();
@@ -723,7 +730,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @DisplayName("Should Return Customer Not Found When Get Cars From Customer Not Exists")
+    @DisplayName("PUT /customers/customerId/cars -> Should Return Customer Not Found When Get Cars From Customer Not Exists")
     void shouldReturnCustomerNotFoundWhenGetCarsFromCustomerNotExists(){
 
         Customer customer = GenerateData.customer(Boolean.FALSE);
