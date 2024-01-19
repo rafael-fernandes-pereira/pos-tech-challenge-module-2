@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class FormaPagamentoService {
+public class PaymentMethodService {
 
     @Autowired private CustomerRepository repository;
 

@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.cliente.controller;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CarService;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
-import com.github.rafaelfernandes.parquimetro.cliente.service.FormaPagamentoService;
+import com.github.rafaelfernandes.parquimetro.cliente.service.PaymentMethodService;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,7 @@ public class CustomerController {
     @Autowired private CustomerService customerService;
     @Autowired private CarService carService;
 
-    @Autowired private FormaPagamentoService formaPagamentoService;
+    @Autowired private PaymentMethodService paymentMethodService;
 
     @GetMapping("/{customerId}")
     private ResponseEntity<Customer> findById(@PathVariable final UUID customerId){
@@ -115,7 +115,7 @@ public class CustomerController {
     @PutMapping("/{customerId}/paymentMethod")
     ResponseEntity<Void> changePaymentMethod(@PathVariable UUID customerId, @RequestBody String paymentMethod){
 
-        this.formaPagamentoService.change(customerId, paymentMethod);
+        this.paymentMethodService.change(customerId, paymentMethod);
 
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
@@ -127,7 +127,7 @@ public class CustomerController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.formaPagamentoService.get(customerId));
+                .body(this.paymentMethodService.get(customerId));
     }
 
 }
