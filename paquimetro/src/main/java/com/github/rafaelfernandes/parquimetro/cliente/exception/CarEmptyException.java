@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 public class CarEmptyException extends RuntimeException{
 
-    private static final String error = "Deve enviar pelo menos um carro!";
+    private static final String error = "Deve enviar pelo menos um car!";
 
     private final List<String> errors;
 

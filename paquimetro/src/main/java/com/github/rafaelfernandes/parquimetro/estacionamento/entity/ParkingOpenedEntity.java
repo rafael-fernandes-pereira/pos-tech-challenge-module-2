@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.entity;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
-import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Document("estacionamento_aberto")
-public record EstacionamentoAbertoEntity(
+public record ParkingOpenedEntity(
         UUID id,
         UUID clienteId,
         @Indexed(unique = true)
@@ -19,13 +19,13 @@ public record EstacionamentoAbertoEntity(
         String nome,
         ContactEntity contato,
         PaymentMethod paymentMethod,
-        TipoPeriodo tipoPeriodo,
+        ParkingType parkingType,
         Integer duracaoFixa,
         LocalDateTime inicio
 ) {
-        public static EstacionamentoAbertoEntity novo (Customer customer, String carro, TipoPeriodo tipoPeriodo, Integer duracao){
+        public static ParkingOpenedEntity novo (Customer customer, String carro, ParkingType parkingType, Integer duracao){
 
-                return new EstacionamentoAbertoEntity(
+                return new ParkingOpenedEntity(
                         UUID.randomUUID(),
                         customer.id(),
                         carro,
@@ -35,8 +35,8 @@ public record EstacionamentoAbertoEntity(
                                 customer.contact().cellphone()
                         ),
                         customer.payment_method(),
-                        tipoPeriodo,
-                        tipoPeriodo.equals(TipoPeriodo.FIXO) ? duracao : null,
+                        parkingType,
+                        parkingType.equals(ParkingType.FIXO) ? duracao : null,
                         LocalDateTime.now()
                 );
 

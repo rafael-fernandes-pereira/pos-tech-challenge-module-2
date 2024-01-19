@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.controller.respons
 import java.util.List;
 
 public record MessageAberto(
-        List<EstacionamentoAberto> estacionamentos,
+        List<ParkingOpened> estacionamentos,
         Integer http_status_code,
         List<String> erros
 ) {

@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 public class CarEmptyAfterDeleteException extends RuntimeException{
 
-    private static final String error = "Não é possível deletar o único carro do customer. Adicione outro e, depois, delete este.";
+    private static final String error = "Não é possível deletar o único car do customer. Adicione outro e, depois, delete este.";
 
     private final List<String> errors;
 

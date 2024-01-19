@@ -2,27 +2,27 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.controller.respons
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
-import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
-import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedEntity;
+import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record EstacionamentoAberto(
+public record ParkingOpened(
         UUID id,
-        UUID cliente_id,
-        String carro,
-        String nome,
+        UUID customer_id,
+        String car,
+        String name,
         Contact contact,
         PaymentMethod payment_method,
-        TipoPeriodo tipo_periodo,
-        Integer duracao_fixa,
-        LocalDateTime inicio
+        ParkingType parking_type,
+        Integer duration,
+        LocalDateTime start
 
 ) {
 
-    public static EstacionamentoAberto fromEstacionamentoAberto(EstacionamentoAbertoEntity entity){
-        return new EstacionamentoAberto(
+    public static ParkingOpened fromEstacionamentoAberto(ParkingOpenedEntity entity){
+        return new ParkingOpened(
                 entity.id(),
                 entity.clienteId(),
                 entity.carro(),
@@ -32,7 +32,7 @@ public record EstacionamentoAberto(
                         entity.contato().celphone()
                 ),
                 entity.paymentMethod(),
-                entity.tipoPeriodo(),
+                entity.parkingType(),
                 entity.duracaoFixa(),
                 entity.inicio()
         );

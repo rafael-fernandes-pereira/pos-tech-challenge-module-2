@@ -3,16 +3,17 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.service;
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.EstacionamentoAberto;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.EstacionamentoEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.MessageEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Recibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.dto.MessageEstacionamentoDTO;
-import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoAbertoEntity;
+import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEncerradoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEnvioRecibo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEncerradoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEnvioReciboRepository;
@@ -55,9 +56,9 @@ public class EstacionamentoService {
     @Value("${estacionamento.valor.hora.restante}")
     Double valorRestanteHora;
 
-    public MessageAberto registrar(TipoPeriodo tipoPeriodo, UUID clienteId, String carro, Integer duracao){
+    public MessageAberto registrar(ParkingType parkingType, UUID clienteId, String carro, Integer duracao){
 
-        if (tipoPeriodo.equals(TipoPeriodo.FIXO) && (duracao == null || duracao <= 0))
+        if (parkingType.equals(ParkingType.FIXO) && (duracao == null || duracao <= 0))
             return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Tempo mínimo de 1 hora");
 
         Customer customer = this.customerService.findBydId(clienteId);
@@ -65,16 +66,16 @@ public class EstacionamentoService {
         if (!customer.cars().contains(carro))
             return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, "Carro não cadastrado para esse cliente");
 
-        if (tipoPeriodo.equals(TipoPeriodo.HORA) && customer.payment_method().equals(PaymentMethod.PIX))
+        if (parkingType.equals(ParkingType.HORA) && customer.payment_method().equals(PaymentMethod.PIX))
             return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Forma de pagamento não permitido para o tipo de periodo escolhido!");
 
         try {
 
-            EstacionamentoAbertoEntity estacionamentoAberto = EstacionamentoAbertoEntity.novo(customer, carro, tipoPeriodo, duracao);
+            ParkingOpenedEntity estacionamentoAberto = ParkingOpenedEntity.novo(customer, carro, parkingType, duracao);
 
-            EstacionamentoAbertoEntity salvo = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+            ParkingOpenedEntity salvo = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
 
-            EstacionamentoAberto estacionamento = EstacionamentoAberto.fromEstacionamentoAberto(salvo);
+            ParkingOpened estacionamento = ParkingOpened.fromEstacionamentoAberto(salvo);
 
             return MessageEstacionamentoDTO.success(HttpStatus.CREATED, estacionamento);
 
@@ -84,42 +85,34 @@ public class EstacionamentoService {
 
     }
 
-    public MessageAberto obterAbertoPorCarro(UUID clienteId, String carro){
-        Optional<EstacionamentoAbertoEntity> entity = Optional.ofNullable(this.estacionamentoAbertoRepository.findByClienteIdAndCarro(clienteId, carro));
+    public ParkingOpened getOpenedByCustomerIdAndCar(UUID customerId, String car){
+        Optional<ParkingOpenedEntity> entity = Optional.ofNullable(this.estacionamentoAbertoRepository.findByClienteIdAndCarro(customerId, car));
 
-        if (entity.isPresent()){
-            EstacionamentoAberto estacionamentoAberto = EstacionamentoAberto.fromEstacionamentoAberto(entity.get());
-            return MessageEstacionamentoDTO.success(HttpStatus.OK, estacionamentoAberto);
-        }
-
-        return MessageEstacionamentoDTO.error(HttpStatus.NOT_FOUND, "Registro não encontrado");
+        return entity
+                .map(ParkingOpened::fromEstacionamentoAberto)
+                .orElseThrow(ParkingOpenedException::new);
 
     }
 
     public MessageEncerrado finalizar(UUID clienteId, String carro){
 
-        MessageAberto messageAberto = this.obterAbertoPorCarro(clienteId, carro);
-
-        if (messageAberto.estacionamentos() == null || messageAberto.estacionamentos().isEmpty())
-            return MessageEncerrado.error(HttpStatus.NOT_FOUND, "Registro de estacionamento não encontrado");
-
-        EstacionamentoAberto estacionamentoAberto = messageAberto.estacionamentos().get(0);
+        ParkingOpened parkingOpened = this.getOpenedByCustomerIdAndCar(clienteId, carro);
 
         LocalDateTime fim = LocalDateTime.now();
 
         BigDecimal valor, multa= new BigDecimal("0.0"), valorFinal;
         Long segundosAMais = 0L;
 
-        Duration duration = Duration.between(estacionamentoAberto.inicio(), fim);
+        Duration duration = Duration.between(parkingOpened.start(), fim);
 
-        if (TipoPeriodo.FIXO.equals(estacionamentoAberto.tipo_periodo())){
+        if (ParkingType.FIXO.equals(parkingOpened.parking_type())){
 
-            valor = new BigDecimal(estacionamentoAberto.duracao_fixa())
+            valor = new BigDecimal(parkingOpened.duration())
                     .multiply(new BigDecimal(this.valorFixo))
                     .multiply(new BigDecimal("1.0"));
 
 
-            Long tempoPedido = estacionamentoAberto.duracao_fixa() * 3600L;
+            Long tempoPedido = parkingOpened.duration() * 3600L;
 
             Long horasAMais = 0L;
 
@@ -164,13 +157,13 @@ public class EstacionamentoService {
         }
 
 
-        Recibo recibo = new Recibo(estacionamentoAberto.inicio(), fim, estacionamentoAberto.duracao_fixa(), valor, segundosAMais, multa, valorFinal);
+        Recibo recibo = new Recibo(parkingOpened.start(), fim, parkingOpened.duration(), valor, segundosAMais, multa, valorFinal);
 
-        EstacionamentoEncerradoEntity estacionamentoEncerradoEntity = EstacionamentoEncerradoEntity.from(estacionamentoAberto, recibo);
+        EstacionamentoEncerradoEntity estacionamentoEncerradoEntity = EstacionamentoEncerradoEntity.from(parkingOpened, recibo);
 
         this.estacionamentoEncerradoRepository.insert(estacionamentoEncerradoEntity);
 
-        this.estacionamentoAbertoRepository.deleteById(estacionamentoAberto.id());
+        this.estacionamentoAbertoRepository.deleteById(parkingOpened.id());
 
         EstacionamentoEnvioRecibo envioRecibo = new EstacionamentoEnvioRecibo(
                 estacionamentoEncerradoEntity.id(),

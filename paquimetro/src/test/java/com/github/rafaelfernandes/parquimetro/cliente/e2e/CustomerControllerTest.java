@@ -671,7 +671,7 @@ public class CustomerControllerTest {
         List<String> errors = documentContext.read("$.errors");
 
         assertThat(errors)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Deve enviar pelo menos um carro!"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("Deve enviar pelo menos um car!"))
         ;
 
     }
@@ -873,7 +873,7 @@ public class CustomerControllerTest {
         List<String> errors = documentContext.read("$.errors");
 
         assertThat(errors)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Não é possível deletar o único carro do customer. Adicione outro e, depois, delete este."))
+                .anyMatch(erro -> erro.equalsIgnoreCase("Não é possível deletar o único car do customer. Adicione outro e, depois, delete este."))
         ;
 
     }

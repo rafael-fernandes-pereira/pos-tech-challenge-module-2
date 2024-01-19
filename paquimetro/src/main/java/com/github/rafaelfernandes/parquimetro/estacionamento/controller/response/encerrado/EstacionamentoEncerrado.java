@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.controller.respons
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEncerradoEntity;
-import com.github.rafaelfernandes.parquimetro.estacionamento.enums.TipoPeriodo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ public record EstacionamentoEncerrado(
         String nome,
         Contact contact,
         PaymentMethod forma_pagamento,
-        TipoPeriodo tipo_periodo,
+        ParkingType tipo_periodo,
         Integer duracao_fixa,
         Recibo recibo
 
@@ -31,7 +31,7 @@ public record EstacionamentoEncerrado(
                         entity.contato().celphone()
                 ),
                 entity.paymentMethod(),
-                entity.tipoPeriodo(),
+                entity.parkingType(),
                 entity.duracaoFixa(),
                 entity.recibo()
         );
