@@ -4,7 +4,6 @@ import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
-import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.State;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
@@ -66,7 +65,7 @@ public class CustomerControllerTest {
     @NotNull
     private CustomerEntity createNewCustomer() {
         Customer customer = GenerateData.customer(Boolean.TRUE);
-        CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
+        CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
 
         return repository.save(customerEntity);
     }
@@ -298,7 +297,7 @@ public class CustomerControllerTest {
         while (continueLoop){
 
             Customer customer = GenerateData.customer(Boolean.TRUE);
-            CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
+            CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
 
             Boolean isEmpty = customers.stream()
                     .filter(clienteEntity1 ->
@@ -348,7 +347,7 @@ public class CustomerControllerTest {
         while (continueLoop){
 
             Customer customer = GenerateData.customer(Boolean.TRUE);
-            CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
+            CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
 
             Boolean isEmpty = customers.stream()
                     .filter(clienteEntity1 ->

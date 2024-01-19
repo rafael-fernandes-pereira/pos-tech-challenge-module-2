@@ -2,7 +2,6 @@ package com.github.rafaelfernandes.parquimetro.cliente.unit;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
-import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +14,7 @@ public class CustomerDtoTest {
 
         Customer customer = GenerateData.customer(Boolean.TRUE);
 
-        CustomerEntity entity = ClienteDto.from(customer, Boolean.TRUE);
+        CustomerEntity entity = CustomerEntity.from(customer, Boolean.TRUE);
 
         assertThat(customer.name()).isEqualTo(entity.name());
         assertThat(customer.document()).isEqualTo(entity.document());

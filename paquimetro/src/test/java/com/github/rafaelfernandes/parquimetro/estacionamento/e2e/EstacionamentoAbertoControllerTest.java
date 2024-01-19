@@ -1,7 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.e2e;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
-import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
@@ -77,7 +76,7 @@ public class EstacionamentoAbertoControllerTest {
     @NotNull
     private ClienteCarro cadastrarNovoCliente() {
         Customer customer = GenerateData.customer(Boolean.TRUE);
-        CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
+        CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
 
         CustomerEntity clienteSalvoEntity = customerRepository.save(customerEntity);
 

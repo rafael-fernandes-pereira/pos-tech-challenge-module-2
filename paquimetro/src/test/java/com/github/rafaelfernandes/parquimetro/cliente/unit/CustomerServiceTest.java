@@ -4,7 +4,6 @@ import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Custome
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CustomerDuplicateException;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
-import com.github.rafaelfernandes.parquimetro.cliente.dto.ClienteDto;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.repository.CustomerRepository;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
@@ -44,7 +43,7 @@ public class CustomerServiceTest {
 
         Customer customer = GenerateData.customer(Boolean.TRUE);
 
-        CustomerEntity customerEntity = ClienteDto.from(customer, Boolean.TRUE);
+        CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
 
         this.repository.insert(customerEntity);
 
