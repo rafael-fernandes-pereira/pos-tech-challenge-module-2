@@ -9,7 +9,7 @@ import com.github.rafaelfernandes.parquimetro.cliente.service.PaymentMethodServi
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.FixTime;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
-import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.repository.ParkingOpenedRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.ParkingService;
 import com.github.rafaelfernandes.parquimetro.util.CustomerCar;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
@@ -65,12 +65,12 @@ public class ParkingControllerTest {
     private ParkingService parkingService;
 
     @Autowired
-    private EstacionamentoAbertoRepository estacionamentoAbertoRepository;
+    private ParkingOpenedRepository parkingOpenedRepository;
 
     @BeforeEach
     void setup(){
         customerRepository.deleteAll();
-        estacionamentoAbertoRepository.deleteAll();
+        parkingOpenedRepository.deleteAll();
     }
 
     @NotNull
@@ -562,7 +562,7 @@ public class ParkingControllerTest {
                 LocalDateTime.now().minusHours(2L)
         );
 
-        this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+        this.parkingOpenedRepository.insert(estacionamentoAberto);
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
@@ -644,7 +644,7 @@ public class ParkingControllerTest {
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
         );
 
-        this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+        this.parkingOpenedRepository.insert(estacionamentoAberto);
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
@@ -725,7 +725,7 @@ public class ParkingControllerTest {
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
         );
 
-        this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+        this.parkingOpenedRepository.insert(estacionamentoAberto);
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
@@ -786,13 +786,14 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoNaoExisteEstacionamentoAberto(){
+    @DisplayName("POST /parking/customerId/car/finish -> Should Return Not Found When Not Exists Parking Opened")
+    void shouldReturnNotFoundWhenNotExistsParkingOpened(){
 
         CustomerCar customerCar = createNewCustomer();
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() +"/finalizar",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() +"/finish",
                         null,
                         String.class
                 );
@@ -801,10 +802,10 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Registro de estacionamento não encontrado"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("Registro não encontrado"))
         ;
 
     }

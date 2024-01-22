@@ -10,25 +10,25 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Document("estacionamento_aberto")
+@Document("parking_opened")
 public record ParkingOpenedEntity(
         UUID id,
-        UUID clienteId,
+        UUID customerId,
         @Indexed(unique = true)
-        String carro,
-        String nome,
-        ContactEntity contato,
+        String car,
+        String name,
+        ContactEntity contact,
         PaymentMethod paymentMethod,
         ParkingType parkingType,
-        Integer duracaoFixa,
-        LocalDateTime inicio
+        Integer duration,
+        LocalDateTime start
 ) {
-        public static ParkingOpenedEntity create(Customer customer, String carro, ParkingType parkingType, Integer duracao){
+        public static ParkingOpenedEntity create(Customer customer, String car, ParkingType parkingType, Integer duration){
 
                 return new ParkingOpenedEntity(
                         UUID.randomUUID(),
                         customer.id(),
-                        carro,
+                        car,
                         customer.name(),
                         new ContactEntity(
                                 customer.contact().email(),
@@ -36,7 +36,7 @@ public record ParkingOpenedEntity(
                         ),
                         customer.payment_method(),
                         parkingType,
-                        parkingType.equals(ParkingType.FIX) ? duracao : 1,
+                        parkingType.equals(ParkingType.FIX) ? duration : 1,
                         LocalDateTime.now()
                 );
 

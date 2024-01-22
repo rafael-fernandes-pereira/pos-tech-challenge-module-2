@@ -16,7 +16,7 @@ import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingDu
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingRegisterHourTypeAndPaymentMethodPixBadRequestException;
-import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.repository.ParkingOpenedRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEncerradoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEnvioReciboRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ import java.util.UUID;
 public class ParkingService {
 
     @Autowired
-    EstacionamentoAbertoRepository estacionamentoAbertoRepository;
+    ParkingOpenedRepository parkingOpenedRepository;
 
     @Autowired
     EstacionamentoEncerradoRepository estacionamentoEncerradoRepository;
@@ -74,7 +74,7 @@ public class ParkingService {
 
             ParkingOpenedEntity parkingOpenedEntity = ParkingOpenedEntity.create(customer, car, parkingType, duration);
 
-            ParkingOpenedEntity saved = this.estacionamentoAbertoRepository.insert(parkingOpenedEntity);
+            ParkingOpenedEntity saved = this.parkingOpenedRepository.insert(parkingOpenedEntity);
 
             return ParkingOpened.fromOpenedParking(saved);
 
@@ -85,7 +85,7 @@ public class ParkingService {
     }
 
     public ParkingOpened getOpenedByCustomerIdAndCar(UUID customerId, String car){
-        Optional<ParkingOpenedEntity> entity = Optional.ofNullable(this.estacionamentoAbertoRepository.findByClienteIdAndCarro(customerId, car));
+        Optional<ParkingOpenedEntity> entity = Optional.ofNullable(this.parkingOpenedRepository.findByCustomerIdAndCar(customerId, car));
 
         return entity
                 .map(ParkingOpened::fromOpenedParking)
@@ -93,29 +93,27 @@ public class ParkingService {
 
     }
 
-    public MessageEncerrado finalizar(UUID clienteId, String carro){
+    public MessageEncerrado finish(UUID clienteId, String carro){
 
         ParkingOpened parkingOpened = this.getOpenedByCustomerIdAndCar(clienteId, carro);
 
         LocalDateTime fim = LocalDateTime.now();
 
         BigDecimal valor, multa= new BigDecimal("0.0"), valorFinal;
-        Long segundosAMais = 0L;
+        long segundosAMais = 0L;
 
         Duration duration = Duration.between(parkingOpened.start(), fim);
 
         if (ParkingType.FIX.equals(parkingOpened.parking_type())){
 
             valor = new BigDecimal(parkingOpened.duration())
-                    .multiply(new BigDecimal(this.valorFixo))
+                    .multiply(BigDecimal.valueOf(this.valorFixo))
                     .multiply(new BigDecimal("1.0"));
 
 
-            Long tempoPedido = parkingOpened.duration() * 3600L;
+            long tempoPedido = parkingOpened.duration() * 3600L;
 
-            Long horasAMais = 0L;
-
-            segundosAMais = 0L;
+            long horasAMais = 0L;
 
             if (duration.getSeconds() > tempoPedido){
 
@@ -123,7 +121,7 @@ public class ParkingService {
 
                 horasAMais = segundosAMais / 3600;
 
-                Long segundosSobrando = segundosAMais % 3600;
+                long segundosSobrando = segundosAMais % 3600;
 
                 if (horasAMais < 1L) {
                     horasAMais = 1L;
@@ -136,21 +134,21 @@ public class ParkingService {
 
             multa = new BigDecimal("1.0")
                     .multiply(new BigDecimal(horasAMais))
-                    .multiply(new BigDecimal(this.valorMulta));
+                    .multiply(BigDecimal.valueOf(this.valorMulta));
 
             valorFinal = valor.add(multa);
         } else {
 
-            Long horas = duration.toHours();
+            long horas = duration.toHours();
 
-            Long horaAMais =  duration.getSeconds() > (horas * 3600) ? 1L : 0L;
+            long horaAMais =  duration.getSeconds() > (horas * 3600) ? 1L : 0L;
 
-            Long horasFinal = horas + horaAMais - 1L;
+            long horasFinal = horas + horaAMais - 1L;
 
             valor = new BigDecimal(horasFinal)
-                    .multiply(new BigDecimal(this.valorRestanteHora))
+                    .multiply(BigDecimal.valueOf(this.valorRestanteHora))
                     .multiply(new BigDecimal("1.0"))
-                    .add(new BigDecimal(this.valorPrimeraHora));
+                    .add(BigDecimal.valueOf(this.valorPrimeraHora));
 
             valorFinal = valor;
         }
@@ -162,7 +160,7 @@ public class ParkingService {
 
         this.estacionamentoEncerradoRepository.insert(estacionamentoEncerradoEntity);
 
-        this.estacionamentoAbertoRepository.deleteById(parkingOpened.id());
+        this.parkingOpenedRepository.deleteById(parkingOpened.id());
 
         EstacionamentoEnvioRecibo envioRecibo = new EstacionamentoEnvioRecibo(
                 estacionamentoEncerradoEntity.id(),

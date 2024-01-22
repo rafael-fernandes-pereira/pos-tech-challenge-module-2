@@ -24,17 +24,17 @@ public record ParkingOpened(
     public static ParkingOpened fromOpenedParking(ParkingOpenedEntity entity){
         return new ParkingOpened(
                 entity.id(),
-                entity.clienteId(),
-                entity.carro(),
-                entity.nome(),
+                entity.customerId(),
+                entity.car(),
+                entity.name(),
                 new Contact(
-                        entity.contato().email(),
-                        entity.contato().celphone()
+                        entity.contact().email(),
+                        entity.contact().celphone()
                 ),
                 entity.paymentMethod(),
                 entity.parkingType(),
-                entity.duracaoFixa(),
-                entity.inicio()
+                entity.duration(),
+                entity.start()
         );
     }
 

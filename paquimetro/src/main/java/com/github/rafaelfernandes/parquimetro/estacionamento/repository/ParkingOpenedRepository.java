@@ -5,9 +5,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.UUID;
 
-public interface EstacionamentoAbertoRepository extends MongoRepository<ParkingOpenedEntity, UUID> {
+public interface ParkingOpenedRepository extends MongoRepository<ParkingOpenedEntity, UUID> {
 
-    ParkingOpenedEntity findByClienteIdAndCarro(UUID clienteId, String carro);
+    ParkingOpenedEntity findByCustomerIdAndCar(UUID customerId, String car);
 
 
 }

@@ -67,10 +67,12 @@ public class ParkingController {
                 .build();
     }
 
-    @PostMapping("/{requestId}/{car}/finalizar")
-    ResponseEntity<MessageEncerrado> finalizar(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
+    @PostMapping("/{customerId}/{car}/finish")
+    ResponseEntity<MessageEncerrado> finalizar(@PathVariable UUID customerId,
+                                               @PathVariable String car,
+                                               UriComponentsBuilder uriComponentsBuilder){
 
-        MessageEncerrado messageEncerrado = this.parkingService.finalizar(requestId, carro);
+        MessageEncerrado messageEncerrado = this.parkingService.finish(customerId, car);
 
         if (!messageEncerrado.erros().isEmpty()) {
             return ResponseEntity
@@ -78,17 +80,17 @@ public class ParkingController {
                     .body(messageEncerrado);
         }
 
-        UUID encerradoId = messageEncerrado.estacionamentos().get(0).id();
+        UUID finished = messageEncerrado.estacionamentos().get(0).id();
 
         URI location = uriComponentsBuilder
-                .path("estacionamento/{requestId}/encerrado")
-                .buildAndExpand(encerradoId)
+                .path("parking/{finishedId}/encerrado")
+                .buildAndExpand(finished)
                 .toUri();
 
         return ResponseEntity
-                .status(messageEncerrado.http_status_code())
+                .status(HttpStatus.CREATED)
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(messageEncerrado);
+                .build();
 
 
     }
