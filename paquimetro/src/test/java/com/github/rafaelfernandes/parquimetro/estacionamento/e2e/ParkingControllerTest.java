@@ -566,7 +566,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/finalizar",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/finish",
                         null,
                         String.class
                 );
@@ -578,22 +578,22 @@ public class ParkingControllerTest {
         LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.start"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.fim"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.horas_solicitadas");
+        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.hours_request");
         assertThat(horasSolicitadas).isEqualTo(2);
 
-        Double valor = documentContext.read("$.estacionamentos[0].recibo.valor");
+        Double valor = documentContext.read("$.estacionamentos[0].recibo.value");
         assertThat(valor).isEqualTo(14.0);
 
-        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.tempo_a_mais");
+        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.more_time");
         assertThat(tempoAMais).isEqualTo(0L);
 
-        Double multa = documentContext.read("$.estacionamentos[0].recibo.multa");
+        Double multa = documentContext.read("$.estacionamentos[0].recibo.penalty");
         assertThat(multa).isEqualTo(0);
 
-        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.valor_final");
+        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.final_value");
         assertThat(valorFinal).isEqualTo(14.0);
 
         Integer httpStatusCode = documentContext.read("$.http_status_code");
@@ -660,22 +660,22 @@ public class ParkingControllerTest {
         LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.start"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.fim"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.horas_solicitadas");
+        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.hours_request");
         assertThat(horasSolicitadas).isEqualTo(2);
 
-        Double valor = documentContext.read("$.estacionamentos[0].recibo.valor");
+        Double valor = documentContext.read("$.estacionamentos[0].recibo.value");
         assertThat(valor).isEqualTo(14.0);
 
-        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.tempo_a_mais");
+        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.more_time");
         assertThat(tempoAMais).isEqualTo(5400L);
 
-        Double multa = documentContext.read("$.estacionamentos[0].recibo.multa");
+        Double multa = documentContext.read("$.estacionamentos[0].recibo.penalty");
         assertThat(multa).isEqualTo(20);
 
-        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.valor_final");
+        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.final_value");
         assertThat(valorFinal).isEqualTo(34.0);
 
         Integer httpStatusCode = documentContext.read("$.http_status_code");
@@ -741,22 +741,22 @@ public class ParkingControllerTest {
         LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.start"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.fim"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.horas_solicitadas");
+        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.hours_request");
         assertThat(horasSolicitadas).isNull();
 
-        Double valor = documentContext.read("$.estacionamentos[0].recibo.valor");
+        Double valor = documentContext.read("$.estacionamentos[0].recibo.value");
         assertThat(valor).isEqualTo(25.0);
 
-        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.tempo_a_mais");
+        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.more_time");
         assertThat(tempoAMais).isEqualTo(0L);
 
-        Double multa = documentContext.read("$.estacionamentos[0].recibo.multa");
+        Double multa = documentContext.read("$.estacionamentos[0].recibo.penalty");
         assertThat(multa).isEqualTo(0.0);
 
-        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.valor_final");
+        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.final_value");
         assertThat(valorFinal).isEqualTo(25.0);
 
         Integer httpStatusCode = documentContext.read("$.http_status_code");

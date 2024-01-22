@@ -3,14 +3,14 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.entity;
 import com.github.rafaelfernandes.parquimetro.cliente.entity.ContactEntity;
 import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Recibo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Receipt;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;
 
 @Document("estacionamento_encerrado")
-public record EstacionamentoEncerradoEntity(
+public record ParkingEndedRepository(
         UUID id,
         UUID clienteId,
         String carro,
@@ -19,10 +19,10 @@ public record EstacionamentoEncerradoEntity(
         PaymentMethod paymentMethod,
         ParkingType parkingType,
         Integer duracaoFixa,
-        Recibo recibo
+        Receipt bill
 ) {
-        public static EstacionamentoEncerradoEntity from (ParkingOpened parkingOpened, Recibo recibo){
-                return new EstacionamentoEncerradoEntity(
+        public static ParkingEndedRepository from (ParkingOpened parkingOpened, Receipt bill){
+                return new ParkingEndedRepository(
                         UUID.randomUUID(),
                         parkingOpened.customer_id(),
                         parkingOpened.car(),
@@ -34,7 +34,7 @@ public record EstacionamentoEncerradoEntity(
                         parkingOpened.payment_method(),
                         parkingOpened.parking_type(),
                         parkingOpened.duration(),
-                        recibo
+                        bill
                 );
         }
 }

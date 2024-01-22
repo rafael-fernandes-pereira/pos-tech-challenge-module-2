@@ -68,7 +68,7 @@ public class ParkingController {
     }
 
     @PostMapping("/{customerId}/{car}/finish")
-    ResponseEntity<MessageEncerrado> finalizar(@PathVariable UUID customerId,
+    ResponseEntity<MessageEncerrado> finish(@PathVariable UUID customerId,
                                                @PathVariable String car,
                                                UriComponentsBuilder uriComponentsBuilder){
 

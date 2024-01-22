@@ -7,10 +7,10 @@ import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.EstacionamentoEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.MessageEncerrado;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Recibo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Receipt;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedEntity;
-import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEncerradoEntity;
-import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEnvioRecibo;
+import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingEndedRepository;
+import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedReceiptEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingDuplicateException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
@@ -46,16 +46,16 @@ public class ParkingService {
     @Autowired
     CustomerService customerService;
 
-    @Value("${estacionamento.valor.fixo}")
+    @Value("${estacionamento.value.fixo}")
     Double valorFixo;
 
-    @Value("${estacionamento.valor.multa}")
+    @Value("${estacionamento.value.penalty}")
     Double valorMulta;
 
-    @Value("${estacionamento.valor.hora.primeira}")
+    @Value("${estacionamento.value.hora.primeira}")
     Double valorPrimeraHora;
 
-    @Value("${estacionamento.valor.hora.restante}")
+    @Value("${estacionamento.value.hora.restante}")
     Double valorRestanteHora;
 
     public ParkingOpened register(ParkingType parkingType, UUID customerId, String car, Integer duration){
@@ -97,88 +97,88 @@ public class ParkingService {
 
         ParkingOpened parkingOpened = this.getOpenedByCustomerIdAndCar(clienteId, carro);
 
-        LocalDateTime fim = LocalDateTime.now();
+        LocalDateTime end = LocalDateTime.now();
 
-        BigDecimal valor, multa= new BigDecimal("0.0"), valorFinal;
-        long segundosAMais = 0L;
+        BigDecimal value, penalty= new BigDecimal("0.0"), valueFinal;
+        long secondsPlus = 0L;
 
-        Duration duration = Duration.between(parkingOpened.start(), fim);
+        Duration duration = Duration.between(parkingOpened.start(), end);
 
         if (ParkingType.FIX.equals(parkingOpened.parking_type())){
 
-            valor = new BigDecimal(parkingOpened.duration())
+            value = new BigDecimal(parkingOpened.duration())
                     .multiply(BigDecimal.valueOf(this.valorFixo))
                     .multiply(new BigDecimal("1.0"));
 
 
-            long tempoPedido = parkingOpened.duration() * 3600L;
+            long durationHour = parkingOpened.duration() * 3600L;
 
-            long horasAMais = 0L;
+            long hourPlus = 0L;
 
-            if (duration.getSeconds() > tempoPedido){
+            if (duration.getSeconds() > durationHour){
 
-                segundosAMais = duration.getSeconds() - tempoPedido;
+                secondsPlus = duration.getSeconds() - durationHour;
 
-                horasAMais = segundosAMais / 3600;
+                hourPlus = secondsPlus / 3600;
 
-                long segundosSobrando = segundosAMais % 3600;
+                long secondsMore = secondsPlus % 3600;
 
-                if (horasAMais < 1L) {
-                    horasAMais = 1L;
-                } else if (segundosSobrando > 0){
-                    horasAMais++;
+                if (hourPlus < 1L) {
+                    hourPlus = 1L;
+                } else if (secondsMore > 0){
+                    hourPlus++;
                 }
 
 
             }
 
-            multa = new BigDecimal("1.0")
-                    .multiply(new BigDecimal(horasAMais))
+            penalty = new BigDecimal("1.0")
+                    .multiply(new BigDecimal(hourPlus))
                     .multiply(BigDecimal.valueOf(this.valorMulta));
 
-            valorFinal = valor.add(multa);
+            valueFinal = value.add(penalty);
         } else {
 
-            long horas = duration.toHours();
+            long hours = duration.toHours();
 
-            long horaAMais =  duration.getSeconds() > (horas * 3600) ? 1L : 0L;
+            long hourPlus =  duration.getSeconds() > (hours * 3600) ? 1L : 0L;
 
-            long horasFinal = horas + horaAMais - 1L;
+            long hourFinal = hours + hourPlus - 1L;
 
-            valor = new BigDecimal(horasFinal)
+            value = new BigDecimal(hourFinal)
                     .multiply(BigDecimal.valueOf(this.valorRestanteHora))
                     .multiply(new BigDecimal("1.0"))
                     .add(BigDecimal.valueOf(this.valorPrimeraHora));
 
-            valorFinal = valor;
+            valueFinal = value;
         }
 
 
-        Recibo recibo = new Recibo(parkingOpened.start(), fim, parkingOpened.duration(), valor, segundosAMais, multa, valorFinal);
+        Receipt receipt = new Receipt(parkingOpened.start(), end, parkingOpened.duration(), value, secondsPlus, penalty, valueFinal);
 
-        EstacionamentoEncerradoEntity estacionamentoEncerradoEntity = EstacionamentoEncerradoEntity.from(parkingOpened, recibo);
+        ParkingEndedRepository parkingEndedRepository = ParkingEndedRepository.from(parkingOpened, receipt);
 
-        this.estacionamentoEncerradoRepository.insert(estacionamentoEncerradoEntity);
+        this.estacionamentoEncerradoRepository.insert(parkingEndedRepository);
 
         this.parkingOpenedRepository.deleteById(parkingOpened.id());
 
-        EstacionamentoEnvioRecibo envioRecibo = new EstacionamentoEnvioRecibo(
-                estacionamentoEncerradoEntity.id(),
-                estacionamentoEncerradoEntity.nome(),
-                estacionamentoEncerradoEntity.contato().email(),
-                estacionamentoEncerradoEntity.contato().celphone(),
-                recibo
+        ParkingOpenedReceiptEntity parkingOpenedReceiptEntity = new ParkingOpenedReceiptEntity(
+                parkingEndedRepository.id(),
+                parkingEndedRepository.nome(),
+                parkingEndedRepository.contato().email(),
+                parkingEndedRepository.contato().celphone(),
+                receipt
         );
 
-        this.estacionamentoEnvioReciboRepository.insert(envioRecibo);
+        this.estacionamentoEnvioReciboRepository.insert(parkingOpenedReceiptEntity);
 
-        EstacionamentoEncerrado estacionamentoEncerrado = EstacionamentoEncerrado.fromEstacionamentoEncerradoEntity(estacionamentoEncerradoEntity);
+        EstacionamentoEncerrado estacionamentoEncerrado = EstacionamentoEncerrado.fromEstacionamentoEncerradoEntity(parkingEndedRepository);
 
         return MessageEncerrado.success(HttpStatus.OK, estacionamentoEncerrado);
     }
 
     public MessageEncerrado obterEncerrado(UUID estacionamentoEncerradoId){
-        Optional<EstacionamentoEncerradoEntity> entity = this.estacionamentoEncerradoRepository.findById(estacionamentoEncerradoId);
+        Optional<ParkingEndedRepository> entity = this.estacionamentoEncerradoRepository.findById(estacionamentoEncerradoId);
 
         if (entity.isPresent()){
             EstacionamentoEncerrado estacionamentoAberto = EstacionamentoEncerrado.fromEstacionamentoEncerradoEntity(entity.get());
