@@ -23,7 +23,7 @@ public record ParkingOpenedEntity(
         Integer duracaoFixa,
         LocalDateTime inicio
 ) {
-        public static ParkingOpenedEntity novo (Customer customer, String carro, ParkingType parkingType, Integer duracao){
+        public static ParkingOpenedEntity create(Customer customer, String carro, ParkingType parkingType, Integer duracao){
 
                 return new ParkingOpenedEntity(
                         UUID.randomUUID(),

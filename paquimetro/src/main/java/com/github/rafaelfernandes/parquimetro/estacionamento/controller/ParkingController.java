@@ -2,7 +2,6 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.controller;
 
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.request.FixTime;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.MessageEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.estacionamento.service.ParkingService;
@@ -32,38 +31,40 @@ public class ParkingController {
     }
 
     @PostMapping("/{customerId}/{car}/fix")
-    ResponseEntity<MessageAberto> createParkingFix(@PathVariable UUID customerId,
+    ResponseEntity<Void> createParkingFix(@PathVariable UUID customerId,
                                                    @PathVariable String car,
                                                    @RequestBody FixTime fixTime,
                                                    UriComponentsBuilder uriComponentsBuilder){
 
-        MessageAberto messageAberto = this.parkingService.registrar(ParkingType.FIX, customerId, car, fixTime.duration());
+        this.parkingService.register(ParkingType.FIX, customerId, car, fixTime.duration());
 
         URI location = uriComponentsBuilder
-                .path("estacionamento/{requestId}/{car}/opened")
+                .path("parking/{requestId}/{car}/opened")
                 .buildAndExpand(customerId, car)
                 .toUri();
 
         return ResponseEntity
-                .status(messageAberto.http_status_code())
+                .status(HttpStatus.CREATED)
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(messageAberto);
+                .build();
     }
 
-    @PostMapping("/{requestId}/{car}/hora")
-    ResponseEntity<MessageAberto> registrarHora(@PathVariable UUID requestId, @PathVariable String carro, UriComponentsBuilder uriComponentsBuilder){
+    @PostMapping("/{customerId}/{car}/hour")
+    ResponseEntity<Void> createParkingHour(@PathVariable UUID customerId,
+                                           @PathVariable String car,
+                                           UriComponentsBuilder uriComponentsBuilder){
 
-        MessageAberto messageAberto = this.parkingService.registrar(ParkingType.HOUR, requestId, carro, null);
+        this.parkingService.register(ParkingType.HOUR, customerId, car, null);
 
         URI location = uriComponentsBuilder
-                .path("estacionamento/{requestId}/{car}/aberto")
-                .buildAndExpand(requestId, carro)
+                .path("parking/{requestId}/{car}/opened")
+                .buildAndExpand(customerId, car)
                 .toUri();
 
         return ResponseEntity
-                .status(messageAberto.http_status_code())
+                .status(HttpStatus.CREATED)
                 .header(HttpHeaders.LOCATION, location.toASCIIString())
-                .body(messageAberto);
+                .build();
     }
 
     @PostMapping("/{requestId}/{car}/finalizar")

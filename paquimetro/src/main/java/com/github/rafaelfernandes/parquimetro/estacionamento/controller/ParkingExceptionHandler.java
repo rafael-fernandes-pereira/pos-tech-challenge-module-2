@@ -2,6 +2,7 @@ package com.github.rafaelfernandes.parquimetro.estacionamento.controller;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.response.CustomerError;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.*;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingDuplicateException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
 import org.springframework.http.HttpStatus;
@@ -33,8 +34,8 @@ public class ParkingExceptionHandler {
                 .body(new CustomerError(exception.getErrors()));
     }
 
-    @ExceptionHandler({CustomerDuplicateException.class})
-    public ResponseEntity<CustomerError> customerDuplicate(CustomerDuplicateException exception){
+    @ExceptionHandler({ParkingDuplicateException.class})
+    public ResponseEntity<CustomerError> customerDuplicate(ParkingDuplicateException exception){
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new CustomerError(exception.getErrors()));

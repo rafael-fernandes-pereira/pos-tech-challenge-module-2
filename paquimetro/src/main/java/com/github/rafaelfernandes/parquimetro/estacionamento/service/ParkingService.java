@@ -1,19 +1,17 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.service;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CarNotFoundException;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
-import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.MessageAberto;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.EstacionamentoEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.MessageEncerrado;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.encerrado.Recibo;
-import com.github.rafaelfernandes.parquimetro.estacionamento.dto.MessageEstacionamentoDTO;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEncerradoEntity;
 import com.github.rafaelfernandes.parquimetro.estacionamento.entity.EstacionamentoEnvioRecibo;
 import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingDuplicateException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
@@ -58,7 +56,7 @@ public class ParkingService {
     @Value("${estacionamento.valor.hora.restante}")
     Double valorRestanteHora;
 
-    public MessageAberto registrar(ParkingType parkingType, UUID customerId, String car, Integer duration){
+    public ParkingOpened register(ParkingType parkingType, UUID customerId, String car, Integer duration){
 
         if (parkingType.equals(ParkingType.FIX) && (duration == null || duration <= 0))
             throw new ParkingMinimumDuration1HourException();
@@ -67,21 +65,19 @@ public class ParkingService {
 
         if (!customer.cars().contains(car)) throw new CarNotFoundException();
 
-        if (parkingType.equals(ParkingType.HOUR) && customer.payment_method().equals(PaymentMethod.PIX))
-            return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Forma de pagamento não permitido para o tipo de periodo escolhido!");
+//        if (parkingType.equals(ParkingType.HOUR) && customer.payment_method().equals(PaymentMethod.PIX))
+//            return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Forma de pagamento não permitido para o tipo de periodo escolhido!");
 
         try {
 
-            ParkingOpenedEntity estacionamentoAberto = ParkingOpenedEntity.novo(customer, car, parkingType, duration);
+            ParkingOpenedEntity estacionamentoAberto = ParkingOpenedEntity.create(customer, car, parkingType, duration);
 
-            ParkingOpenedEntity salvo = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+            ParkingOpenedEntity saved = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
 
-            ParkingOpened estacionamento = ParkingOpened.fromEstacionamentoAberto(salvo);
-
-            return MessageEstacionamentoDTO.success(HttpStatus.CREATED, estacionamento);
+            return ParkingOpened.fromOpenedParking(saved);
 
         } catch (DuplicateKeyException exception){
-            return MessageEstacionamentoDTO.error(HttpStatus.CONFLICT, "Carro já está com tempo lançado!");
+            throw new ParkingDuplicateException();
         }
 
     }
@@ -90,7 +86,7 @@ public class ParkingService {
         Optional<ParkingOpenedEntity> entity = Optional.ofNullable(this.estacionamentoAbertoRepository.findByClienteIdAndCarro(customerId, car));
 
         return entity
-                .map(ParkingOpened::fromEstacionamentoAberto)
+                .map(ParkingOpened::fromOpenedParking)
                 .orElseThrow(ParkingOpenedException::new);
 
     }

@@ -21,7 +21,7 @@ public record ParkingOpened(
 
 ) {
 
-    public static ParkingOpened fromEstacionamentoAberto(ParkingOpenedEntity entity){
+    public static ParkingOpened fromOpenedParking(ParkingOpenedEntity entity){
         return new ParkingOpened(
                 entity.id(),
                 entity.clienteId(),

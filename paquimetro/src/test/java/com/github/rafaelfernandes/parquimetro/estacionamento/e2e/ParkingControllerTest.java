@@ -91,7 +91,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.parkingService.registrar(ParkingType.FIX, customerCar.customer().id(), customerCar.carro(), 3);
+        this.parkingService.register(ParkingType.FIX, customerCar.customer().id(), customerCar.carro(), 3);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -179,7 +179,8 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void devCadastrarPeriodoFixo(){
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should Return Parking Fix Created")
+    void shouldReturnParkingFixCreated(){
 
         CustomerCar customerCar = createNewCustomer();
 
@@ -187,7 +188,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fix",
                         fixTime,
                         Void.class
                 );
@@ -261,14 +262,15 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetonarDuplicidadeQUandoTentaRegistrarTempoFixoEUmaMesmaPlaca(){
+    @DisplayName("POST /parking/customerId/car -> Should Return Conflict When Create A Fix Parking With Customer and Car Has Registered")
+    void shouldReturnConflictWhenCreateAFixParkingWithCustomerAndCarHasRegistered(){
         CustomerCar customerCar = createNewCustomer();
 
         FixTime fixTime = new FixTime(3);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fix",
                         fixTime,
                         Void.class
                 );
@@ -278,7 +280,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> createResponseDuplicate = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fixo",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/fix",
                         fixTime,
                         String.class
                 );
@@ -287,7 +289,7 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponseDuplicate.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Carro já está com tempo lançado!"))
