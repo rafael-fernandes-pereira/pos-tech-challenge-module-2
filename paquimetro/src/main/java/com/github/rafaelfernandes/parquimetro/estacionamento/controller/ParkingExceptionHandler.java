@@ -5,6 +5,7 @@ import com.github.rafaelfernandes.parquimetro.cliente.exception.*;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingDuplicateException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingRegisterHourTypeAndPaymentMethodPixBadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -35,14 +36,14 @@ public class ParkingExceptionHandler {
     }
 
     @ExceptionHandler({ParkingDuplicateException.class})
-    public ResponseEntity<CustomerError> customerDuplicate(ParkingDuplicateException exception){
+    public ResponseEntity<CustomerError> parkingDuplicate(ParkingDuplicateException exception){
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new CustomerError(exception.getErrors()));
     }
 
-    @ExceptionHandler({CarEmptyException.class})
-    public ResponseEntity<CustomerError> carEmpty(CarEmptyException exception){
+    @ExceptionHandler({ParkingRegisterHourTypeAndPaymentMethodPixBadRequestException.class})
+    public ResponseEntity<CustomerError> parkingRegisterHourTypeAndPaymentMethodPix(ParkingRegisterHourTypeAndPaymentMethodPixBadRequestException exception){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new CustomerError(exception.getErrors()));

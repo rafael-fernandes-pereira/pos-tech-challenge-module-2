@@ -1,6 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.estacionamento.service;
 
 import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.cliente.exception.CarNotFoundException;
 import com.github.rafaelfernandes.parquimetro.cliente.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.estacionamento.controller.response.aberto.ParkingOpened;
@@ -14,6 +15,7 @@ import com.github.rafaelfernandes.parquimetro.estacionamento.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingDuplicateException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingMinimumDuration1HourException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingOpenedException;
+import com.github.rafaelfernandes.parquimetro.estacionamento.exception.ParkingRegisterHourTypeAndPaymentMethodPixBadRequestException;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoAbertoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEncerradoRepository;
 import com.github.rafaelfernandes.parquimetro.estacionamento.repository.EstacionamentoEnvioReciboRepository;
@@ -65,14 +67,14 @@ public class ParkingService {
 
         if (!customer.cars().contains(car)) throw new CarNotFoundException();
 
-//        if (parkingType.equals(ParkingType.HOUR) && customer.payment_method().equals(PaymentMethod.PIX))
-//            return MessageEstacionamentoDTO.error(HttpStatus.BAD_REQUEST, "Forma de pagamento não permitido para o tipo de periodo escolhido!");
+        if (parkingType.equals(ParkingType.HOUR) && customer.payment_method().equals(PaymentMethod.PIX))
+            throw new ParkingRegisterHourTypeAndPaymentMethodPixBadRequestException();
 
         try {
 
-            ParkingOpenedEntity estacionamentoAberto = ParkingOpenedEntity.create(customer, car, parkingType, duration);
+            ParkingOpenedEntity parkingOpenedEntity = ParkingOpenedEntity.create(customer, car, parkingType, duration);
 
-            ParkingOpenedEntity saved = this.estacionamentoAbertoRepository.insert(estacionamentoAberto);
+            ParkingOpenedEntity saved = this.estacionamentoAbertoRepository.insert(parkingOpenedEntity);
 
             return ParkingOpened.fromOpenedParking(saved);
 

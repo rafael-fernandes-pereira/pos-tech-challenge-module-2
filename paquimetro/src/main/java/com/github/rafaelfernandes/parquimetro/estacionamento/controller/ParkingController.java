@@ -54,7 +54,7 @@ public class ParkingController {
                                            @PathVariable String car,
                                            UriComponentsBuilder uriComponentsBuilder){
 
-        this.parkingService.register(ParkingType.HOUR, customerId, car, null);
+        this.parkingService.register(ParkingType.HOUR, customerId, car, 1);
 
         URI location = uriComponentsBuilder
                 .path("parking/{requestId}/{car}/opened")

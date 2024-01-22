@@ -348,7 +348,8 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRegistrarTempoPorHora(){
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should Return Parking Hour Created")
+    void shouldReturnParkingHourCreated(){
 
         CustomerCar customerCar = createNewCustomer();
 
@@ -356,7 +357,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hour",
                         null,
                         String.class
                 );
@@ -376,14 +377,15 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetornarBadRequestQuandoTipoPeriodoIgualHoraEPgamentoPix(){
+    @DisplayName("POST -> /parking/customerId/car/hour -> Should Return Bad Request When Period Time Is Hour And Payment Method Is Pix")
+    void shouldReturnBadRequestWhenPeriodTimeIsHourAndPaymentMethodIsPix(){
         CustomerCar customerCar = createNewCustomer();
 
         this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.PIX.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hour",
                         null,
                         String.class
                 );
@@ -393,7 +395,7 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Forma de pagamento não permitido para o tipo de periodo escolhido!"))
@@ -402,13 +404,14 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoClienteNaoExisteAoTentarRegistrarTempoHora(){
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should return customer not found when register park hour")
+    void shouldReturnCustomerNotFoundWhenRegisterParkHour(){
 
         FixTime fixTime = new FixTime(3);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + UUID.randomUUID() + "/AABBCCD/hora",
+                        "/parking/" + UUID.randomUUID() + "/AABBCCD/hour",
                         fixTime,
                         String.class
                 );
@@ -427,7 +430,8 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetornarNotFoundQuandoPlacaNaoExisteAoTentarRegistrarTempoHora(){
+    @DisplayName("POST -> /parking/customerId/car/fix -> Should Return Not Found When Car Not Exists In Customer On Register Hour Time")
+    void shouldReturnNotFoundWhenCarNotExistsInCustomerOnRegisterHourTime(){
 
         CustomerCar customerCar = createNewCustomer();
 
@@ -435,7 +439,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/AABBCCD/hora",
+                        "/parking/" + customerCar.customer().id() + "/AABBCCD/hour",
                         fixTime,
                         String.class
                 );
@@ -444,24 +448,25 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
-                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não cadastrado para esse cliente"))
+                .anyMatch(erro -> erro.equalsIgnoreCase("Carro não existe para esse cliente"))
 
         ;
 
     }
 
     @Test
-    void deveRetonarDuplicidadeQUandoTentaRegistrarTempoHoraEUmaMesmaPlaca(){
+    @DisplayName("POST /parking/customerId/car -> Should Return Conflict When Create An Hour Parking With Customer and Car Has Registered")
+    void shouldReturnConflictWhenCreateAnHourParkingWithCustomerAndCarHasRegistered(){
         CustomerCar customerCar = createNewCustomer();
 
         this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hour",
                         null,
                         String.class
                 );
@@ -471,7 +476,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> createResponseDuplicate = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hour",
                         null,
                         String.class
                 );
@@ -480,7 +485,7 @@ public class ParkingControllerTest {
 
         DocumentContext documentContext = JsonPath.parse(createResponseDuplicate.getBody());
 
-        ArrayList<String> erros = documentContext.read("$.erros");
+        ArrayList<String> erros = documentContext.read("$.errors");
 
         assertThat(erros)
                 .anyMatch(erro -> erro.equalsIgnoreCase("Carro já está com tempo lançado!"))
@@ -490,51 +495,50 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveRetonarDuracaoNulaQuandoRegistraHora(){
+    @DisplayName("GET /parking/customerId/car -> Should Return Parking Hour Opened")
+    void shouldReturnParkingHourOpened(){
+
         CustomerCar customerCar = createNewCustomer();
 
         this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
 
-        FixTime fixTime = new FixTime(0);
+        this.parkingService.register(ParkingType.HOUR, customerCar.customer().id(), customerCar.carro(), 1);
 
-        ResponseEntity<String> createResponse = this.restTemplate
-                .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
-                        fixTime,
+        ResponseEntity<String> response = this.restTemplate
+                .getForEntity(
+                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro() + "/opened",
                         String.class
                 );
 
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
 
-        DocumentContext documentContext = JsonPath.parse(createResponse.getBody());
+        String id = documentContext.read("$.customer_id");
 
-        Integer duracao = documentContext.read("$.estacionamentos[0].duration");
+        assertThat(id).isEqualTo(customerCar.customer().id().toString());
 
-        assertThat(duracao).isNull();
+        String car = documentContext.read("$.car");
 
-        this.estacionamentoAbertoRepository.deleteAll();
+        assertThat(car).isEqualTo(customerCar.carro());
 
-        fixTime = new FixTime(-1);
+        String paymentMethod = documentContext.read("$.payment_method");
 
-        createResponse = this.restTemplate
-                .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/hora",
-                        fixTime,
-                        String.class
-                );
+        assertThat(paymentMethod).isEqualTo(PaymentMethod.CARTAO_CREDITO.name());
 
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        String parkingType = documentContext.read("$.parking_type");
 
+        assertThat(parkingType).isEqualTo(ParkingType.HOUR.name());
 
-        documentContext = JsonPath.parse(createResponse.getBody());
+        Integer duration = documentContext.read("$.duration");
 
-        duracao = documentContext.read("$.estacionamentos[0].duration");
+        assertThat(duration).isEqualTo(1);
 
-        assertThat(duracao).isNull();
+        LocalDateTime start = LocalDateTime.parse(documentContext.read("$.start"));
+
+        assertThat(start).isNotNull();
 
     }
-
 
     @Test
     void deveFinalizarFixo2HorasSemMulta(){
