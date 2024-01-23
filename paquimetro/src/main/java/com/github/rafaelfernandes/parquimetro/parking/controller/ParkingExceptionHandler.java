@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice(basePackages = "com.github.rafaelfernandes.parquimetro.estacionamento.controller")
+@ControllerAdvice(basePackages = "com.github.rafaelfernandes.parquimetro.parking.controller")
 public class ParkingExceptionHandler {
 
     @ExceptionHandler({ParkingOpenedException.class})

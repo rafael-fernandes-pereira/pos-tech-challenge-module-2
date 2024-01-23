@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice(basePackages = "com.github.rafaelfernandes.parquimetro.cliente.controller")
+@ControllerAdvice(basePackages = "com.github.rafaelfernandes.parquimetro.customer.controller")
 public class CustomerExceptionHandler {
 
     @ExceptionHandler({CustomerNotFoundException.class})
