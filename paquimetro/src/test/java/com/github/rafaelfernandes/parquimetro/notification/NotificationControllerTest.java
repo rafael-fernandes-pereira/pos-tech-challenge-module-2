@@ -8,7 +8,9 @@ import com.github.rafaelfernandes.parquimetro.customer.repository.CustomerReposi
 import com.github.rafaelfernandes.parquimetro.customer.service.PaymentMethodService;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.parking.enums.ParkingType;
+import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingFinishedRepository;
 import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingOpenedRepository;
+import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingSendReceiptRepository;
 import com.github.rafaelfernandes.parquimetro.parking.service.ParkingService;
 import com.github.rafaelfernandes.parquimetro.util.CustomerCar;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
@@ -57,21 +59,29 @@ public class NotificationControllerTest {
     private ParkingOpenedRepository parkingOpenedRepository;
 
     @Autowired
+    ParkingFinishedRepository parkingFinishedRepository;
+
+    @Autowired
     private PaymentMethodService paymentMethodService;
 
     @Autowired
     private ParkingService parkingService;
+
+    @Autowired
+    ParkingSendReceiptRepository parkingSendReceiptRepository;
 
 
     @BeforeEach
     void setup(){
         customerRepository.deleteAll();
         parkingOpenedRepository.deleteAll();
+        parkingFinishedRepository.deleteAll();
+        parkingSendReceiptRepository.deleteAll();
     }
 
 
     @NotNull
-    private CustomerCar createNewCustomer(Boolean createAndFinishParkiing) {
+    private CustomerCar createNewCustomer(Boolean createParkiing, Boolean finishParkiing) {
         Customer customer = GenerateData.customer(Boolean.TRUE);
         CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
 
@@ -79,7 +89,7 @@ public class NotificationControllerTest {
 
         paymentMethodService.change(clienteSalvoEntity.id(), PaymentMethod.CREDIT_CARD.name());
 
-        if (createAndFinishParkiing){
+        if (createParkiing){
 
             ParkingOpenedEntity parkingOpenedEntity = new ParkingOpenedEntity(
                     UUID.randomUUID(),
@@ -98,8 +108,10 @@ public class NotificationControllerTest {
 
             this.parkingOpenedRepository.insert(parkingOpenedEntity);
 
-            this.parkingService.finish(clienteSalvoEntity.id(), customer.cars().get(0));
+        }
 
+        if (finishParkiing){
+            this.parkingService.finish(clienteSalvoEntity.id(), customer.cars().get(0));
         }
 
         Customer customerSalvo = Customer.from(clienteSalvoEntity);
@@ -111,7 +123,7 @@ public class NotificationControllerTest {
     @DisplayName("POST /notification/receipt -> Should Return Success When Send One Receipt Email")
     void shouldReturnSuccessWhenSendOneReceiptEmail(){
 
-        createNewCustomer(Boolean.TRUE);
+        createNewCustomer(Boolean.TRUE, Boolean.TRUE);
 
 
         ResponseEntity<String> response = this.restTemplate
@@ -123,9 +135,12 @@ public class NotificationControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-
-
     }
 
+    @Test
+    @DisplayName("POST /notification/fix -> Should Return Success When Send Notification Fix Time")
+    void shouldReturnSuccessWhenSendNotificationFixTime(){
+
+    }
 
 }
