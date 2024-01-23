@@ -5,12 +5,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;
 
-@Document("estacionamento_envio_recibo")
-public record ParkingOpenedReceiptEntity(
-        UUID estacionamentoEncerradoId,
-        String nome,
+@Document("parking_send_receipt")
+public record ParkingSendReceiptEntity(
+        UUID parkingFinishedId,
+        String name,
         String email,
-        String telefone,
-        Receipt bill
+        String cellphone,
+        Receipt receipt
 ) {
 }

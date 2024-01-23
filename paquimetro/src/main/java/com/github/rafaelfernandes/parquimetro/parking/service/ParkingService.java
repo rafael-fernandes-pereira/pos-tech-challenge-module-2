@@ -9,7 +9,7 @@ import com.github.rafaelfernandes.parquimetro.parking.controller.response.encerr
 import com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado.Receipt;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingFinishedEntity;
-import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingOpenedReceiptEntity;
+import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingSendReceiptEntity;
 import com.github.rafaelfernandes.parquimetro.parking.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.parking.exception.*;
 import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingOpenedRepository;
@@ -157,7 +157,7 @@ public class ParkingService {
 
         this.parkingOpenedRepository.deleteById(parkingOpened.id());
 
-        ParkingOpenedReceiptEntity parkingOpenedReceiptEntity = new ParkingOpenedReceiptEntity(
+        ParkingSendReceiptEntity parkingSendReceiptEntity = new ParkingSendReceiptEntity(
                 parkingFinishedEntity.id(),
                 parkingFinishedEntity.name(),
                 parkingFinishedEntity.contact().email(),
@@ -165,7 +165,7 @@ public class ParkingService {
                 receipt
         );
 
-        this.parkingSendReceiptRepository.insert(parkingOpenedReceiptEntity);
+        this.parkingSendReceiptRepository.insert(parkingSendReceiptEntity);
 
         return ParkingFinished.fromEstacionamentoEncerradoEntity(parkingFinishedEntity);
 

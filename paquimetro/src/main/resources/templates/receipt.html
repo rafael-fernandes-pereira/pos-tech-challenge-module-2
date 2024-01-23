@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo de Estacionamento</title>
+</head>
+<body style="font-family: Arial, sans-serif;">
+
+<p>Olá <strong th:text="${nome}">Nome</strong>!</p>
+
+<p>Segue o recibo de estacionamento da data <strong th:text="${inicio}">inicio</strong>:</p>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+    <p><strong>Recibo:</strong></p>
+    <p><strong>Data/hora início: </strong><span th:text="${inicio}"> Inicio</span></p>
+    <p><strong>Data/hora fim: </strong> <span th:text="${fim}">Fim</span></p>
+    <p><strong>Valor: </strong>R$ <span th:text="${valor}">valor</span></p>
+    <p><strong>Multa: </strong>R$ <span th:text="${multa}">multa</span> </p>
+    <p><strong>Total: </strong>R$ <span th:text="${total}"> total</span></p>
+
+</div>
+
+</body>
+</html>
