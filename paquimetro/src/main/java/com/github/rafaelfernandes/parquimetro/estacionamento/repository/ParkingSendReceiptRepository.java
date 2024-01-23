@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.UUID;
 
-public interface EstacionamentoEnvioReciboRepository extends MongoRepository<ParkingOpenedReceiptEntity, UUID> {
+public interface ParkingSendReceiptRepository extends MongoRepository<ParkingOpenedReceiptEntity, UUID> {
 
 
 }

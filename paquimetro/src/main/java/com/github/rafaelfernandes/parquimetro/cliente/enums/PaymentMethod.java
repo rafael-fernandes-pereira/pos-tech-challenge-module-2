@@ -6,18 +6,18 @@ import lombok.Getter;
 public enum PaymentMethod {
 
     PIX ("Pix"),
-    CARTAO_CREDITO("Cartão de crédito"),
-    CARTAO_DEBITO("Cartão de débito");
+    CREDIT_CARD("Cartão de crédito"),
+    DEBIT_CARD("Cartão de débito");
 
-    private final String descricao;
+    private final String details;
 
-    PaymentMethod(String descricao){
-        this.descricao = descricao;
+    PaymentMethod(String details){
+        this.details = details;
     }
 
-    public static PaymentMethod getByName(String descricao) {
+    public static PaymentMethod getByName(String details) {
         for (PaymentMethod paymentMethod : values()) {
-            if (paymentMethod.name().equalsIgnoreCase(descricao)) {
+            if (paymentMethod.name().equalsIgnoreCase(details)) {
                 return paymentMethod;
             }
         }

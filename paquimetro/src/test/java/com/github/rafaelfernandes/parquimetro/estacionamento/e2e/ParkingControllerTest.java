@@ -95,7 +95,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro() + "/opened",
+                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro() + "/open",
                         String.class
                 );
 
@@ -135,7 +135,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/parking/"+ UUID.randomUUID() + "/AABBCCD" + "/opened",
+                        "/parking/"+ UUID.randomUUID() + "/AABBCCD" + "/open",
                         String.class
                 );
 
@@ -159,7 +159,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/parking/"+ customerCar.customer().id() + "/AABBCCD" + "/opened",
+                        "/parking/"+ customerCar.customer().id() + "/AABBCCD" + "/open",
                         String.class
                 );
 
@@ -353,7 +353,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -462,7 +462,7 @@ public class ParkingControllerTest {
     void shouldReturnConflictWhenCreateAnHourParkingWithCustomerAndCarHasRegistered(){
         CustomerCar customerCar = createNewCustomer();
 
-        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -500,13 +500,13 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
         this.parkingService.register(ParkingType.HOUR, customerCar.customer().id(), customerCar.carro(), 1);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro() + "/opened",
+                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro() + "/open",
                         String.class
                 );
 
@@ -524,7 +524,7 @@ public class ParkingControllerTest {
 
         String paymentMethod = documentContext.read("$.payment_method");
 
-        assertThat(paymentMethod).isEqualTo(PaymentMethod.CARTAO_CREDITO.name());
+        assertThat(paymentMethod).isEqualTo(PaymentMethod.CREDIT_CARD.name());
 
         String parkingType = documentContext.read("$.parking_type");
 
@@ -541,11 +541,12 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveFinalizarFixo2HorasSemMulta(){
+    @DisplayName("POST /parking/customerId/car/finish -> Should Return Finished Fix Time Without Penalty")
+    void shouldReturnFinishedFixTimeWithoutPenalty(){
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
         ParkingOpenedEntity estacionamentoAberto = new ParkingOpenedEntity(
                 UUID.randomUUID(),
@@ -571,36 +572,30 @@ public class ParkingControllerTest {
                         String.class
                 );
 
-        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
 
-        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.start"));
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.receipt.start"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.end"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.receipt.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.hours_request");
+        Integer horasSolicitadas = documentContext.read("$.receipt.hours_request");
         assertThat(horasSolicitadas).isEqualTo(2);
 
-        Double valor = documentContext.read("$.estacionamentos[0].recibo.value");
+        Double valor = documentContext.read("$.receipt.value");
         assertThat(valor).isEqualTo(14.0);
 
-        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.more_time");
-        assertThat(tempoAMais).isEqualTo(0L);
+        Integer tempoAMais = documentContext.read("$.receipt.more_time");
+        assertThat(tempoAMais).isZero();
 
-        Double multa = documentContext.read("$.estacionamentos[0].recibo.penalty");
-        assertThat(multa).isEqualTo(0);
+        Double multa = documentContext.read("$.receipt.penalty");
+        assertThat(multa).isZero();
 
-        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.final_value");
+        Double valorFinal = documentContext.read("$.receipt.final_value");
         assertThat(valorFinal).isEqualTo(14.0);
-
-        Integer httpStatusCode = documentContext.read("$.http_status_code");
-        assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
-
-        List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isEmpty();
 
         URI location = finalizarResponse.getHeaders().getLocation();
 
@@ -614,7 +609,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ customerCar.customer().id() + "/" + customerCar.carro(),
+                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro(),
                         String.class
                 );
 
@@ -624,12 +619,13 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveFinalizar2HorasComMulta(){
+    @DisplayName("POST /parking/customerId/car/finish -> Should Return Finished Fix Time With Penalty")
+    void shouldReturnFinishedFixTimeWithPenalty(){
         CustomerCar customerCar = createNewCustomer();
 
-        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
-        ParkingOpenedEntity estacionamentoAberto = new ParkingOpenedEntity(
+        ParkingOpenedEntity parkingOpenedEntity = new ParkingOpenedEntity(
                 UUID.randomUUID(),
                 customerCar.customer().id(),
                 customerCar.carro(),
@@ -644,45 +640,39 @@ public class ParkingControllerTest {
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
         );
 
-        this.parkingOpenedRepository.insert(estacionamentoAberto);
+        this.parkingOpenedRepository.insert(parkingOpenedEntity);
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/finalizar",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/finish",
                         null,
                         String.class
                 );
 
-        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
 
-        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.start"));
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.receipt.start"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.end"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.receipt.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.hours_request");
+        Integer horasSolicitadas = documentContext.read("$.receipt.hours_request");
         assertThat(horasSolicitadas).isEqualTo(2);
 
-        Double valor = documentContext.read("$.estacionamentos[0].recibo.value");
+        Double valor = documentContext.read("$.receipt.value");
         assertThat(valor).isEqualTo(14.0);
 
-        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.more_time");
-        assertThat(tempoAMais).isEqualTo(5400L);
+        Integer tempoAMais = documentContext.read("$.receipt.more_time");
+        assertThat(tempoAMais).isEqualTo(5400);
 
-        Double multa = documentContext.read("$.estacionamentos[0].recibo.penalty");
+        Double multa = documentContext.read("$.receipt.penalty");
         assertThat(multa).isEqualTo(20);
 
-        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.final_value");
+        Double valorFinal = documentContext.read("$.receipt.final_value");
         assertThat(valorFinal).isEqualTo(34.0);
-
-        Integer httpStatusCode = documentContext.read("$.http_status_code");
-        assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
-
-        List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isEmpty();
 
         URI location = finalizarResponse.getHeaders().getLocation();
 
@@ -696,7 +686,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ customerCar.customer().id() + "/" + customerCar.carro(),
+                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro(),
                         String.class
                 );
 
@@ -704,13 +694,14 @@ public class ParkingControllerTest {
     }
 
     @Test
-    void deveFinalizarComHoraVariavel(){
+    @DisplayName("POST /parking/customerId/car/finish -> Should Return Finished Variable Time")
+    void shouldReturnFinishedVariableTime(){
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CARTAO_CREDITO.name());
+        this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
-        ParkingOpenedEntity estacionamentoAberto = new ParkingOpenedEntity(
+        ParkingOpenedEntity parkingOpenedEntity = new ParkingOpenedEntity(
                 UUID.randomUUID(),
                 customerCar.customer().id(),
                 customerCar.carro(),
@@ -725,45 +716,39 @@ public class ParkingControllerTest {
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L)
         );
 
-        this.parkingOpenedRepository.insert(estacionamentoAberto);
+        this.parkingOpenedRepository.insert(parkingOpenedEntity);
 
         ResponseEntity<String> finalizarResponse = this.restTemplate
                 .postForEntity(
-                        "/estacionamento/" + customerCar.customer().id() + "/" + customerCar.carro() + "/finalizar",
+                        "/parking/" + customerCar.customer().id() + "/" + customerCar.carro() + "/finish",
                         null,
                         String.class
                 );
 
-        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(finalizarResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         DocumentContext documentContext = JsonPath.parse(finalizarResponse.getBody());
 
-        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.start"));
+        LocalDateTime inicio = LocalDateTime.parse(documentContext.read("$.receipt.start"));
         assertThat(inicio).isNotNull();
 
-        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.estacionamentos[0].recibo.end"));
+        LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.receipt.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.estacionamentos[0].recibo.hours_request");
+        Integer horasSolicitadas = documentContext.read("$.receipt.hours_request");
         assertThat(horasSolicitadas).isNull();
 
-        Double valor = documentContext.read("$.estacionamentos[0].recibo.value");
+        Double valor = documentContext.read("$.receipt.value");
         assertThat(valor).isEqualTo(25.0);
 
-        Integer tempoAMais = documentContext.read("$.estacionamentos[0].recibo.more_time");
-        assertThat(tempoAMais).isEqualTo(0L);
+        Integer tempoAMais = documentContext.read("$.receipt.more_time");
+        assertThat(tempoAMais).isZero();
 
-        Double multa = documentContext.read("$.estacionamentos[0].recibo.penalty");
+        Double multa = documentContext.read("$.receipt.penalty");
         assertThat(multa).isEqualTo(0.0);
 
-        Double valorFinal = documentContext.read("$.estacionamentos[0].recibo.final_value");
+        Double valorFinal = documentContext.read("$.receipt.final_value");
         assertThat(valorFinal).isEqualTo(25.0);
-
-        Integer httpStatusCode = documentContext.read("$.http_status_code");
-        assertThat(httpStatusCode).isEqualTo(HttpStatus.OK.value());
-
-        List<String> erros = documentContext.read("$.erros");
-        assertThat(erros).isEmpty();
 
         URI location = finalizarResponse.getHeaders().getLocation();
 
@@ -777,7 +762,7 @@ public class ParkingControllerTest {
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
-                        "/estacionamento/"+ customerCar.customer().id() + "/" + customerCar.carro(),
+                        "/parking/"+ customerCar.customer().id() + "/" + customerCar.carro(),
                         String.class
                 );
 

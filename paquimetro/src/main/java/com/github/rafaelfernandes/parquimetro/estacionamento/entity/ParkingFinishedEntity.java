@@ -9,20 +9,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;
 
-@Document("estacionamento_encerrado")
-public record ParkingEndedRepository(
+@Document("parking_finished")
+public record ParkingFinishedEntity(
         UUID id,
-        UUID clienteId,
-        String carro,
-        String nome,
-        ContactEntity contato,
+        UUID customerId,
+        String car,
+        String name,
+        ContactEntity contact,
         PaymentMethod paymentMethod,
         ParkingType parkingType,
-        Integer duracaoFixa,
-        Receipt bill
+        Integer duration,
+        Receipt receipt
 ) {
-        public static ParkingEndedRepository from (ParkingOpened parkingOpened, Receipt bill){
-                return new ParkingEndedRepository(
+        public static ParkingFinishedEntity from (ParkingOpened parkingOpened, Receipt bill){
+                return new ParkingFinishedEntity(
                         UUID.randomUUID(),
                         parkingOpened.customer_id(),
                         parkingOpened.car(),
