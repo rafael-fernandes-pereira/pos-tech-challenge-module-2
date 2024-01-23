@@ -1,10 +1,10 @@
 package com.github.rafaelfernandes.parquimetro.util;
 
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Customer;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Contact;
-import com.github.rafaelfernandes.parquimetro.cliente.controller.request.Address;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.State;
-import com.github.rafaelfernandes.parquimetro.cliente.enums.PaymentMethod;
+import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
+import com.github.rafaelfernandes.parquimetro.customer.controller.request.Contact;
+import com.github.rafaelfernandes.parquimetro.customer.controller.request.Address;
+import com.github.rafaelfernandes.parquimetro.customer.enums.State;
+import com.github.rafaelfernandes.parquimetro.customer.enums.PaymentMethod;
 import net.datafaker.Faker;
 
 import java.util.List;
