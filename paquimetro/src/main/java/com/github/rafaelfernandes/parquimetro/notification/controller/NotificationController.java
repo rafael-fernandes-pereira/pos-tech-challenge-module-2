@@ -26,4 +26,9 @@ public class NotificationController {
 
     }
 
+    @PostMapping("/timeToClose/fix")
+    ResponseEntity<Void> sendTimeToCloseFix(){
+        return null;
+    }
+
 }

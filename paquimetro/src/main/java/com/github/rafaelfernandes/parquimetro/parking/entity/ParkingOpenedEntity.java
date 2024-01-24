@@ -19,11 +19,19 @@ public record ParkingOpenedEntity(
         String name,
         ContactEntity contact,
         PaymentMethod paymentMethod,
+        @Indexed
         ParkingType parkingType,
-        Integer duration,
-        LocalDateTime start
+        LocalDateTime start,
+        @Indexed
+        LocalDateTime expectedEndTime
 ) {
-        public static ParkingOpenedEntity create(Customer customer, String car, ParkingType parkingType, Integer duration){
+        public static ParkingOpenedEntity create(Customer customer, String car, ParkingType parkingType, Long duration){
+
+                LocalDateTime start = LocalDateTime.now();
+
+                Long durationHours = parkingType.equals(ParkingType.FIX) ? duration : 1L;
+
+                LocalDateTime expectedEndTime = LocalDateTime.now().plusHours(durationHours);
 
                 return new ParkingOpenedEntity(
                         UUID.randomUUID(),
@@ -36,8 +44,9 @@ public record ParkingOpenedEntity(
                         ),
                         customer.payment_method(),
                         parkingType,
-                        parkingType.equals(ParkingType.FIX) ? duration : 1,
-                        LocalDateTime.now()
+                        start,
+                        expectedEndTime
+
                 );
 
         }

@@ -53,7 +53,7 @@ public class ParkingService {
     @Value("${parking.hour.rest}")
     Double RestHourValue;
 
-    public ParkingOpened register(ParkingType parkingType, UUID customerId, String car, Integer duration){
+    public ParkingOpened register(ParkingType parkingType, UUID customerId, String car, Long duration){
 
         if (parkingType.equals(ParkingType.FIX) && (duration == null || duration <= 0))
             throw new ParkingMinimumDuration1HourException();
@@ -149,7 +149,7 @@ public class ParkingService {
         }
 
 
-        Receipt receipt = new Receipt(parkingOpened.start(), end, parkingOpened.duration(), value, secondsPlus, penalty, valueFinal);
+        Receipt receipt = new Receipt(parkingOpened.start(), end, value, secondsPlus, penalty, valueFinal);
 
         ParkingFinishedEntity parkingFinishedEntity = ParkingFinishedEntity.from(parkingOpened, receipt);
 

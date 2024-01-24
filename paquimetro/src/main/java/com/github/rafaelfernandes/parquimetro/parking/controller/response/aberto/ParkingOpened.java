@@ -16,8 +16,8 @@ public record ParkingOpened(
         Contact contact,
         PaymentMethod payment_method,
         ParkingType parking_type,
-        Integer duration,
-        LocalDateTime start
+        LocalDateTime start,
+        LocalDateTime expectedEndTime
 
 ) {
 
@@ -33,8 +33,8 @@ public record ParkingOpened(
                 ),
                 entity.paymentMethod(),
                 entity.parkingType(),
-                entity.duration(),
-                entity.start()
+                entity.start(),
+                entity.expectedEndTime()
         );
     }
 

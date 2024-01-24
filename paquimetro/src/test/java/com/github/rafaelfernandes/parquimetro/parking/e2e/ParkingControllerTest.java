@@ -90,7 +90,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        this.parkingService.register(ParkingType.FIX, customerCar.customer().id(), customerCar.carro(), 3);
+        this.parkingService.register(ParkingType.FIX, customerCar.customer().id(), customerCar.carro(), 3L);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -183,7 +183,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        FixTime fixTime = new FixTime(3);
+        FixTime fixTime = new FixTime(3L);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
@@ -210,7 +210,7 @@ public class ParkingControllerTest {
     @DisplayName("POST -> /parking/customerId/car/fix -> Should return customer not found when register park fix")
     void shouldReturnCustomerNotFoundWhenRegisterParkFix(){
 
-        FixTime fixTime = new FixTime(3);
+        FixTime fixTime = new FixTime(3L);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -238,7 +238,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        FixTime fixTime = new FixTime(3);
+        FixTime fixTime = new FixTime(3L);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -265,7 +265,7 @@ public class ParkingControllerTest {
     void shouldReturnConflictWhenCreateAFixParkingWithCustomerAndCarHasRegistered(){
         CustomerCar customerCar = createNewCustomer();
 
-        FixTime fixTime = new FixTime(3);
+        FixTime fixTime = new FixTime(3L);
 
         ResponseEntity<Void> createResponse = this.restTemplate
                 .postForEntity(
@@ -302,7 +302,7 @@ public class ParkingControllerTest {
     void shouldReturnBadRequestWhenDurationIsLessOrEqualsZeroToFixTime(){
         CustomerCar customerCar = createNewCustomer();
 
-        FixTime fixTime = new FixTime(0);
+        FixTime fixTime = new FixTime(0L);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -323,7 +323,7 @@ public class ParkingControllerTest {
 
         ;
 
-        fixTime = new FixTime(-1);
+        fixTime = new FixTime(-1L);
 
         createResponse = this.restTemplate
                 .postForEntity(
@@ -406,7 +406,7 @@ public class ParkingControllerTest {
     @DisplayName("POST -> /parking/customerId/car/fix -> Should return customer not found when register park hour")
     void shouldReturnCustomerNotFoundWhenRegisterParkHour(){
 
-        FixTime fixTime = new FixTime(3);
+        FixTime fixTime = new FixTime(3L);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -434,7 +434,7 @@ public class ParkingControllerTest {
 
         CustomerCar customerCar = createNewCustomer();
 
-        FixTime fixTime = new FixTime(3);
+        FixTime fixTime = new FixTime(3L);
 
         ResponseEntity<String> createResponse = this.restTemplate
                 .postForEntity(
@@ -501,7 +501,7 @@ public class ParkingControllerTest {
 
         this.paymentMethodService.change(customerCar.customer().id(), PaymentMethod.CREDIT_CARD.name());
 
-        this.parkingService.register(ParkingType.HOUR, customerCar.customer().id(), customerCar.carro(), 1);
+        this.parkingService.register(ParkingType.HOUR, customerCar.customer().id(), customerCar.carro(), 1L);
 
         ResponseEntity<String> response = this.restTemplate
                 .getForEntity(
@@ -558,8 +558,8 @@ public class ParkingControllerTest {
                 ),
                 customerCar.customer().payment_method(),
                 ParkingType.FIX,
-                2,
-                LocalDateTime.now().minusHours(2L)
+                LocalDateTime.now().minusHours(2L),
+                LocalDateTime.now()
         );
 
         this.parkingOpenedRepository.insert(estacionamentoAberto);
@@ -635,8 +635,8 @@ public class ParkingControllerTest {
                 ),
                 customerCar.customer().payment_method(),
                 ParkingType.FIX,
-                2,
-                LocalDateTime.now().minusHours(3L).minusMinutes(30L)
+                LocalDateTime.now().minusHours(3L).minusMinutes(30L),
+                LocalDateTime.now().minusHours(2L)
         );
 
         this.parkingOpenedRepository.insert(parkingOpenedEntity);

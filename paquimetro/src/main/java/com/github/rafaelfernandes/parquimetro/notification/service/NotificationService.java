@@ -1,6 +1,9 @@
 package com.github.rafaelfernandes.parquimetro.notification.service;
 
+import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingSendReceiptEntity;
+import com.github.rafaelfernandes.parquimetro.parking.enums.ParkingType;
+import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingOpenedRepository;
 import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingSendReceiptRepository;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -14,6 +17,7 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +33,10 @@ public class NotificationService {
     private TemplateEngine templateEngine;
 
     @Autowired
-    private ParkingSendReceiptRepository parkingSendReceiptRepository;
+    ParkingSendReceiptRepository parkingSendReceiptRepository;
+
+    @Autowired
+    ParkingOpenedRepository parkingOpenedRepository;
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm:ss");
 
@@ -65,6 +72,16 @@ public class NotificationService {
         }
 
         parkingSendReceiptRepository.deleteAll();
+
+    }
+
+    public void sendTimeToCloseFix(){
+
+        LocalDateTime endTime = LocalDateTime.now().minusMinutes(45);
+
+        List<ParkingOpenedEntity> parkingOpenedEntities = parkingOpenedRepository.findByParkingOpened(endTime, ParkingType.FIX);
+
+
 
     }
 
