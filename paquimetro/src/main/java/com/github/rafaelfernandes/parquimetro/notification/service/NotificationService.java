@@ -75,13 +75,33 @@ public class NotificationService {
 
     }
 
-    public void sendTimeToCloseFix(){
+    public void sendTimeToCloseFix() throws Exception{
 
-        LocalDateTime endTime = LocalDateTime.now().minusMinutes(45);
+        String templateName = "fix";
+
+        LocalDateTime endTime = LocalDateTime.now()
+                .minusMinutes(45)
+                .withSecond(0)
+                .withNano(0);
 
         List<ParkingOpenedEntity> parkingOpenedEntities = parkingOpenedRepository.findByParkingOpened(endTime, ParkingType.FIX);
 
+        for (ParkingOpenedEntity opened: parkingOpenedEntities){
+            MimeMessage message = mailSender.createMimeMessage();
 
+            message.setFrom(new InternetAddress("rafaelfernandes@github.com"));
+            message.setRecipients(MimeMessage.RecipientType.TO, opened.contact().email());
+            message.setSubject("Alerta! Estacionamento Expirando...");
+
+            Context context = new Context();
+            context.setVariable("nome", opened.name());
+
+            String text = templateEngine.process(templateName, context);
+
+            message.setContent(text, "text/html; charset=utf-8");
+
+            mailSender.send(message);
+        }
 
     }
 

@@ -31,7 +31,10 @@ public record ParkingOpenedEntity(
 
                 Long durationHours = parkingType.equals(ParkingType.FIX) ? duration : 1L;
 
-                LocalDateTime expectedEndTime = LocalDateTime.now().plusHours(durationHours);
+                LocalDateTime expectedEndTime = LocalDateTime.now()
+                        .plusHours(durationHours)
+                        .withSecond(0)
+                        .withNano(0);
 
                 return new ParkingOpenedEntity(
                         UUID.randomUUID(),

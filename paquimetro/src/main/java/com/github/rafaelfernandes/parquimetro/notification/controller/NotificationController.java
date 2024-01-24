@@ -27,8 +27,14 @@ public class NotificationController {
     }
 
     @PostMapping("/timeToClose/fix")
-    ResponseEntity<Void> sendTimeToCloseFix(){
-        return null;
+    ResponseEntity<Void> sendTimeToCloseFix() throws Exception{
+        this.notificationService.sendTimeToCloseFix();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+
+
     }
 
 }

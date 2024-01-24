@@ -102,8 +102,8 @@ public class NotificationControllerTest {
                     ),
                     customer.payment_method(),
                     ParkingType.HOUR,
-                    null,
-                    LocalDateTime.now().minusHours(3L).minusMinutes(30L)
+                    LocalDateTime.now().minusHours(3L),
+                    LocalDateTime.now().minusHours(3L)
             );
 
             this.parkingOpenedRepository.insert(parkingOpenedEntity);
@@ -140,6 +140,41 @@ public class NotificationControllerTest {
     @Test
     @DisplayName("POST /notification/fix -> Should Return Success When Send Notification Fix Time")
     void shouldReturnSuccessWhenSendNotificationFixTime(){
+
+        Customer customer = GenerateData.customer(Boolean.TRUE);
+        CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
+
+        CustomerEntity clienteSalvoEntity = customerRepository.save(customerEntity);
+
+        paymentMethodService.change(clienteSalvoEntity.id(), PaymentMethod.CREDIT_CARD.name());
+
+        ParkingOpenedEntity parkingOpenedEntity = new ParkingOpenedEntity(
+                UUID.randomUUID(),
+                clienteSalvoEntity.id(),
+                customer.cars().get(0),
+                customer.name(),
+                new ContactEntity(
+                        customer.contact().email(),
+                        customer.contact().cellphone()
+                ),
+                customer.payment_method(),
+                ParkingType.FIX,
+                LocalDateTime.now().minusMinutes(55L),
+                LocalDateTime.now().minusMinutes(55L)
+        );
+
+        this.parkingOpenedRepository.insert(parkingOpenedEntity);
+
+
+
+        ResponseEntity<String> response = this.restTemplate
+                .postForEntity(
+                        "/notification/timeToClose/fix",
+                        null,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
     }
 
