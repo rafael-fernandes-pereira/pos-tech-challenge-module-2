@@ -33,6 +33,15 @@ public class NotificationController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .build();
+    }
+
+    @PostMapping("/timeToClose/hour")
+    ResponseEntity<Void> sendTimeToCloseHour() throws Exception{
+        this.notificationService.sendTimeToCloseHour();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
 
 
     }

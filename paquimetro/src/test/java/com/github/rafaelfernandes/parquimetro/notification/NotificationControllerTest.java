@@ -15,6 +15,8 @@ import com.github.rafaelfernandes.parquimetro.parking.service.ParkingService;
 import com.github.rafaelfernandes.parquimetro.util.CustomerCar;
 import com.github.rafaelfernandes.parquimetro.util.GenerateData;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -175,6 +177,57 @@ public class NotificationControllerTest {
                 );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @DisplayName("POST /notification/fix -> Should Return Success When Send Notification Hour Time")
+    void shouldReturnSuccessWhenSendNotificationHourTime(){
+
+        Customer customer = GenerateData.customer(Boolean.TRUE);
+        CustomerEntity customerEntity = CustomerEntity.from(customer, Boolean.TRUE);
+
+        CustomerEntity clienteSalvoEntity = customerRepository.save(customerEntity);
+
+        paymentMethodService.change(clienteSalvoEntity.id(), PaymentMethod.CREDIT_CARD.name());
+
+        ParkingOpenedEntity parkingOpenedEntity = new ParkingOpenedEntity(
+                UUID.randomUUID(),
+                clienteSalvoEntity.id(),
+                customer.cars().get(0),
+                customer.name(),
+                new ContactEntity(
+                        customer.contact().email(),
+                        customer.contact().cellphone()
+                ),
+                customer.payment_method(),
+                ParkingType.HOUR,
+                LocalDateTime.now().minusMinutes(55L),
+                LocalDateTime.now().minusMinutes(55L)
+        );
+
+        this.parkingOpenedRepository.insert(parkingOpenedEntity);
+
+
+
+        ResponseEntity<String> response = this.restTemplate
+                .postForEntity(
+                        "/notification/timeToClose/hour",
+                        null,
+                        String.class
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<String> getResponse = this.restTemplate
+                .getForEntity(
+                        "/parking/"+ parkingOpenedEntity.customerId() + "/" + parkingOpenedEntity.car() + "/open",
+                        String.class
+                );
+
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+
 
     }
 

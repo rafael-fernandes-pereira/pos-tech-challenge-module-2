@@ -106,6 +106,37 @@ public class NotificationService {
     }
 
 
+    public void sendTimeToCloseHour()  throws Exception{
 
+        String templateName = "hour";
 
+        LocalDateTime endTime = LocalDateTime.now()
+                .minusMinutes(45)
+                .withSecond(0)
+                .withNano(0);
+
+        List<ParkingOpenedEntity> parkingOpenedEntities = parkingOpenedRepository.findByParkingOpened(endTime, ParkingType.HOUR);
+
+        for (ParkingOpenedEntity opened: parkingOpenedEntities){
+            MimeMessage message = mailSender.createMimeMessage();
+
+            message.setFrom(new InternetAddress("rafaelfernandes@github.com"));
+            message.setRecipients(MimeMessage.RecipientType.TO, opened.contact().email());
+            message.setSubject("Alerta! Estacionamento Expirando...");
+
+            Context context = new Context();
+            context.setVariable("nome", opened.name());
+
+            String text = templateEngine.process(templateName, context);
+
+            message.setContent(text, "text/html; charset=utf-8");
+
+            mailSender.send(message);
+
+            ParkingOpenedEntity updateExpectedEndTime = ParkingOpenedEntity.updateExpectedEndTime(opened);
+            this.parkingOpenedRepository.save(updateExpectedEndTime);
+
+        }
+
+    }
 }

@@ -53,4 +53,18 @@ public record ParkingOpenedEntity(
                 );
 
         }
+
+        public static ParkingOpenedEntity updateExpectedEndTime(ParkingOpenedEntity parkingOpenedEntity){
+                return new ParkingOpenedEntity(
+                        parkingOpenedEntity.id(),
+                        parkingOpenedEntity.customerId(),
+                        parkingOpenedEntity.car(),
+                        parkingOpenedEntity.name(),
+                        parkingOpenedEntity.contact(),
+                        parkingOpenedEntity.paymentMethod(),
+                        parkingOpenedEntity.parkingType(),
+                        parkingOpenedEntity.start(),
+                        LocalDateTime.now().plusHours(1L)
+                );
+        }
 }
