@@ -18,10 +18,9 @@ public record ParkingFinishedEntity(
         ContactEntity contact,
         PaymentMethod paymentMethod,
         ParkingType parkingType,
-        Integer duration,
         Receipt receipt
 ) {
-        public static ParkingFinishedEntity from (ParkingOpened parkingOpened, Receipt bill){
+        public static ParkingFinishedEntity from (ParkingOpened parkingOpened, Receipt receipt){
                 return new ParkingFinishedEntity(
                         UUID.randomUUID(),
                         parkingOpened.customer_id(),
@@ -33,8 +32,7 @@ public record ParkingFinishedEntity(
                         ),
                         parkingOpened.payment_method(),
                         parkingOpened.parking_type(),
-                        parkingOpened.duration(),
-                        bill
+                        receipt
                 );
         }
 }

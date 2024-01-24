@@ -98,21 +98,20 @@ public class ParkingService {
         long secondsPlus = 0L;
 
         Duration duration = Duration.between(parkingOpened.start(), end);
+        Duration expectedDuration = Duration.between(parkingOpened.start(), parkingOpened.expectedEndTime());
 
         if (ParkingType.FIX.equals(parkingOpened.parking_type())){
 
-            value = new BigDecimal(parkingOpened.duration())
+            value = new BigDecimal(expectedDuration.toHours())
                     .multiply(BigDecimal.valueOf(this.fixValue))
                     .multiply(new BigDecimal("1.0"));
 
 
-            long durationHour = parkingOpened.duration() * 3600L;
-
             long hourPlus = 0L;
 
-            if (duration.getSeconds() > durationHour){
+            if (duration.getSeconds() > expectedDuration.getSeconds()){
 
-                secondsPlus = duration.getSeconds() - durationHour;
+                secondsPlus = duration.getSeconds() - expectedDuration.getSeconds();
 
                 hourPlus = secondsPlus / 3600;
 
@@ -149,7 +148,7 @@ public class ParkingService {
         }
 
 
-        Receipt receipt = new Receipt(parkingOpened.start(), end, value, secondsPlus, penalty, valueFinal);
+        Receipt receipt = new Receipt(parkingOpened.start(), end, value, penalty, valueFinal);
 
         ParkingFinishedEntity parkingFinishedEntity = ParkingFinishedEntity.from(parkingOpened, receipt);
 

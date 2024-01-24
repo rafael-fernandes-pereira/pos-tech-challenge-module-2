@@ -7,7 +7,6 @@ public record Receipt(
         LocalDateTime start,
         LocalDateTime end,
         BigDecimal value,
-        Long more_time,
         BigDecimal penalty,
         BigDecimal final_value
 ) {

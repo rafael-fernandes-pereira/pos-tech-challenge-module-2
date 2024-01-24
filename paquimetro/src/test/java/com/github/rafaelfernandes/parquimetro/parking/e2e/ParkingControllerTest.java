@@ -118,10 +118,6 @@ public class ParkingControllerTest {
 
         assertThat(parkingType).isEqualTo(ParkingType.FIX.name());
 
-        Integer duration = documentContext.read("$.duration");
-
-        assertThat(duration).isEqualTo(3);
-
         LocalDateTime start = LocalDateTime.parse(documentContext.read("$.start"));
 
         assertThat(start).isNotNull();
@@ -529,10 +525,6 @@ public class ParkingControllerTest {
 
         assertThat(parkingType).isEqualTo(ParkingType.HOUR.name());
 
-        Integer duration = documentContext.read("$.duration");
-
-        assertThat(duration).isEqualTo(1);
-
         LocalDateTime start = LocalDateTime.parse(documentContext.read("$.start"));
 
         assertThat(start).isNotNull();
@@ -581,14 +573,8 @@ public class ParkingControllerTest {
         LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.receipt.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.receipt.hours_request");
-        assertThat(horasSolicitadas).isEqualTo(2);
-
         Double valor = documentContext.read("$.receipt.value");
         assertThat(valor).isEqualTo(14.0);
-
-        Integer tempoAMais = documentContext.read("$.receipt.more_time");
-        assertThat(tempoAMais).isZero();
 
         Double multa = documentContext.read("$.receipt.penalty");
         assertThat(multa).isZero();
@@ -636,7 +622,7 @@ public class ParkingControllerTest {
                 customerCar.customer().payment_method(),
                 ParkingType.FIX,
                 LocalDateTime.now().minusHours(3L).minusMinutes(30L),
-                LocalDateTime.now().minusHours(2L)
+                LocalDateTime.now().minusHours(3L).minusMinutes(30L).plusHours(2L)
         );
 
         this.parkingOpenedRepository.insert(parkingOpenedEntity);
@@ -658,14 +644,8 @@ public class ParkingControllerTest {
         LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.receipt.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.receipt.hours_request");
-        assertThat(horasSolicitadas).isEqualTo(2);
-
         Double valor = documentContext.read("$.receipt.value");
         assertThat(valor).isEqualTo(14.0);
-
-        Integer tempoAMais = documentContext.read("$.receipt.more_time");
-        assertThat(tempoAMais).isEqualTo(5400);
 
         Double multa = documentContext.read("$.receipt.penalty");
         assertThat(multa).isEqualTo(20);
@@ -711,8 +691,8 @@ public class ParkingControllerTest {
                 ),
                 customerCar.customer().payment_method(),
                 ParkingType.HOUR,
-                null,
-                LocalDateTime.now().minusHours(3L).minusMinutes(30L)
+                LocalDateTime.now().minusHours(3L).minusMinutes(30L),
+                LocalDateTime.now()
         );
 
         this.parkingOpenedRepository.insert(parkingOpenedEntity);
@@ -734,14 +714,8 @@ public class ParkingControllerTest {
         LocalDateTime fim = LocalDateTime.parse(documentContext.read("$.receipt.end"));
         assertThat(fim).isNotNull();
 
-        Integer horasSolicitadas = documentContext.read("$.receipt.hours_request");
-        assertThat(horasSolicitadas).isNull();
-
         Double valor = documentContext.read("$.receipt.value");
         assertThat(valor).isEqualTo(25.0);
-
-        Integer tempoAMais = documentContext.read("$.receipt.more_time");
-        assertThat(tempoAMais).isZero();
 
         Double multa = documentContext.read("$.receipt.penalty");
         assertThat(multa).isEqualTo(0.0);

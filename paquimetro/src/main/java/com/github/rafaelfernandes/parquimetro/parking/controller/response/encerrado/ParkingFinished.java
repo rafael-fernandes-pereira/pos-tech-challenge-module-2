@@ -15,7 +15,6 @@ public record ParkingFinished(
         Contact contact,
         PaymentMethod payment_method,
         ParkingType parking_type,
-        Integer duraration,
         Receipt receipt
 
 ) {
@@ -32,7 +31,6 @@ public record ParkingFinished(
                 ),
                 entity.paymentMethod(),
                 entity.parkingType(),
-                entity.duration(),
                 entity.receipt()
         );
     }
