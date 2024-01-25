@@ -1,8 +1,8 @@
 package com.github.rafaelfernandes.parquimetro.parking.controller;
 
 import com.github.rafaelfernandes.parquimetro.parking.controller.request.FixTime;
-import com.github.rafaelfernandes.parquimetro.parking.controller.response.aberto.ParkingOpened;
-import com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado.ParkingFinished;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.open.ParkingOpened;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.close.ParkingFinished;
 import com.github.rafaelfernandes.parquimetro.parking.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.parking.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;

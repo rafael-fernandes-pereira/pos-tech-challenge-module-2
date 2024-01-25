@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado;
+package com.github.rafaelfernandes.parquimetro.parking.controller.response.close;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

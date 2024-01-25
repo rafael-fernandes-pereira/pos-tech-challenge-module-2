@@ -1,6 +1,6 @@
 package com.github.rafaelfernandes.parquimetro.parking.entity;
 
-import com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado.Receipt;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.close.Receipt;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;

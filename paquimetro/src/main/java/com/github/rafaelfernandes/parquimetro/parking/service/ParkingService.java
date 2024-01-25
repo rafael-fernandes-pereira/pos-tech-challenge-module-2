@@ -4,9 +4,9 @@ import com.github.rafaelfernandes.parquimetro.customer.controller.request.Custom
 import com.github.rafaelfernandes.parquimetro.customer.enums.PaymentMethod;
 import com.github.rafaelfernandes.parquimetro.customer.exception.CarNotFoundException;
 import com.github.rafaelfernandes.parquimetro.customer.service.CustomerService;
-import com.github.rafaelfernandes.parquimetro.parking.controller.response.aberto.ParkingOpened;
-import com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado.ParkingFinished;
-import com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado.Receipt;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.open.ParkingOpened;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.close.ParkingFinished;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.close.Receipt;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingOpenedEntity;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingFinishedEntity;
 import com.github.rafaelfernandes.parquimetro.parking.entity.ParkingSendReceiptEntity;

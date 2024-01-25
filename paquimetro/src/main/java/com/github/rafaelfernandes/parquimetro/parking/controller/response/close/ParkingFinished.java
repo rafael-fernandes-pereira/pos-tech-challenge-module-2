@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.parking.controller.response.encerrado;
+package com.github.rafaelfernandes.parquimetro.parking.controller.response.close;
 
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.customer.enums.PaymentMethod;
