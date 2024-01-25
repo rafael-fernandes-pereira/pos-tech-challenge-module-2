@@ -1,21 +1,26 @@
 version: '3'
 
 services:
-  mongodb:
-    image: mongo
+  parking_db:
+    image: mongo:5.0
     environment:
       MONGO_INITDB_ROOT_USERNAME: parquimetro
       MONGO_INITDB_ROOT_PASSWORD: parquimetro
     ports:
       - "27017:27017"
 
-  cliente:
+  parking_client: &parking_client
     build:
-      dockerfile: Dockerfile
+      dockerfile: parking.Dockerfile
     ports:
       - "8080:8080"
     depends_on:
       - mongodb
     environment:
-      SPRING_DATA_MONGODB_URI: "mongodb://parquimetro:parquimetro@mongodb:27017/admin"
+      SPRING_DATA_MONGODB_URI: "mongodb://parquimetro:parquimetro@parking_db:27017/admin"
       SPRING_DATA_MONGODB_DATABASE: "parquimetro"
+
+  send_notification:
+    <<: *parking_client
+    ports:
+      - "8090:8080"

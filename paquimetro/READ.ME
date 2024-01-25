@@ -1,0 +1,10 @@
+docker run -d --rm \
+    -p 27017:27017 \
+    -e MONGO_INITDB_ROOT_USERNAME=parquimetro \
+    -e MONGO_INITDB_ROOT_PASSWORD=parquimetro \
+    --name parking_db \
+    mongo:5
+
+./mvnw clean install
+
+./mvnw spring-boot:run
