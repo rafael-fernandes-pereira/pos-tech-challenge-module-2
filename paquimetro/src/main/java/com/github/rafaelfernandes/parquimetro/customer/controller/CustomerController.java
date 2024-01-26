@@ -1,15 +1,25 @@
 package com.github.rafaelfernandes.parquimetro.customer.controller;
 
+import com.github.rafaelfernandes.parquimetro.customer.controller.response.CustomerError;
 import com.github.rafaelfernandes.parquimetro.customer.enums.PaymentMethod;
+import com.github.rafaelfernandes.parquimetro.customer.exception.CustomerNotFoundException;
 import com.github.rafaelfernandes.parquimetro.customer.service.CarService;
 import com.github.rafaelfernandes.parquimetro.customer.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.customer.service.PaymentMethodService;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,6 +30,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/customers")
+@Tag(name = "Customer", description = "Customer Endpoint - Responsável por todo gerenciamento de clientes")
 public class CustomerController {
 
     @Autowired private CustomerService customerService;
@@ -27,6 +38,12 @@ public class CustomerController {
 
     @Autowired private PaymentMethodService paymentMethodService;
 
+    @Operation(summary = "Obter cliente")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Customer.class))}),
+            @ApiResponse(description = "Não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+
+    })
     @GetMapping("/{customerId}")
     private ResponseEntity<Customer> findById(@PathVariable final UUID customerId){
 
@@ -38,6 +55,12 @@ public class CustomerController {
 
     }
 
+    @Operation(summary = "Cadastrar cliente")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "201", headers = {@Header(name = "/customer/customerId", description = "Location do customer criado")}),
+            @ApiResponse(description = "Problemas de validação e/ou tentativa de registrar duplidade", responseCode = "400", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+
+    })
     @PostMapping("/")
     private ResponseEntity<Void> createCustomer(@RequestBody final Customer customer, UriComponentsBuilder uriComponentsBuilder){
 
