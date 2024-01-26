@@ -38,7 +38,7 @@ public class CustomerController {
 
     @Autowired private PaymentMethodService paymentMethodService;
 
-    @Operation(summary = "Obter cliente")
+    @Operation(summary = "02 - Obter cliente")
     @ApiResponses(value = {
             @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Customer.class))}),
             @ApiResponse(description = "Não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
@@ -55,7 +55,7 @@ public class CustomerController {
 
     }
 
-    @Operation(summary = "Cadastrar cliente")
+    @Operation(summary = "01 - Cadastrar cliente")
     @ApiResponses(value = {
             @ApiResponse(description = "Sucesso", responseCode = "201", headers = {@Header(name = "/customer/customerId", description = "Location do customer criado")}),
             @ApiResponse(description = "Problemas de validação e/ou tentativa de registrar duplidade", responseCode = "400", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
@@ -78,6 +78,10 @@ public class CustomerController {
 
     }
 
+    @Operation(summary = "03 - Obter clientes", description = "03")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))})
+    })
     @GetMapping("/")
     ResponseEntity<Page<Customer>> getAll(Pageable pageable){
         return ResponseEntity
@@ -85,6 +89,11 @@ public class CustomerController {
                 .body(this.customerService.getAll(pageable));
     }
 
+    @Operation(summary = "Alterar cliente")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "201"),
+            @ApiResponse(description = "Problemas de validação e/ou tentativa de registrar duplidade", responseCode = "400", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+    })
     @PutMapping("/{customerId}")
     ResponseEntity<Void> update(@PathVariable UUID customerId, @RequestBody Customer customer){
 
@@ -95,6 +104,10 @@ public class CustomerController {
                 .build();
     }
 
+    @Operation(summary = "Deletar cliente")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "201")
+    })
     @DeleteMapping("/{customerId}")
     ResponseEntity<Void> delete(@PathVariable("customerId") UUID customerId){
 
