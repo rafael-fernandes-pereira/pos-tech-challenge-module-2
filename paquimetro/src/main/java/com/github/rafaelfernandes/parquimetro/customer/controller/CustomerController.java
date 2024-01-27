@@ -8,8 +8,10 @@ import com.github.rafaelfernandes.parquimetro.customer.service.CustomerService;
 import com.github.rafaelfernandes.parquimetro.customer.service.PaymentMethodService;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -41,7 +43,7 @@ public class CustomerController {
     @Operation(summary = "02 - Obter cliente")
     @ApiResponses(value = {
             @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Customer.class))}),
-            @ApiResponse(description = "Não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+            @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
 
     })
     @GetMapping("/{customerId}")
@@ -119,6 +121,11 @@ public class CustomerController {
 
     }
 
+    @Operation(summary = "Adicionar carros")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "200"),
+            @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+    })
     @PutMapping("/{customerId}/cars")
     ResponseEntity<Void> addCar(@PathVariable UUID customerId, @RequestBody List<String> cars){
 
@@ -130,6 +137,11 @@ public class CustomerController {
 
     }
 
+    @Operation(summary = "Exibir carros")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "200"),
+            @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+    })
     @GetMapping("/{customerId}/cars")
     ResponseEntity<List<String>> getCars(@PathVariable UUID customerId){
 
@@ -138,8 +150,14 @@ public class CustomerController {
                 .body(this.carService.getCars(customerId));
     }
 
+    @Operation(summary = "Deletar carros")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "200"),
+            @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))}),
+            @ApiResponse(description = "Deletar o único carro / Deletar carro não existente / Enviar dados vazios", responseCode = "400", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+    })
     @DeleteMapping("/{customerId}/{car}")
-    ResponseEntity<Void> delete(@PathVariable UUID customerId, @PathVariable String car){
+    ResponseEntity<Void> deleteCar(@PathVariable UUID customerId, @PathVariable String car){
 
         this.carService.delete(customerId, car);
 
@@ -148,8 +166,14 @@ public class CustomerController {
                 .build();
     }
 
+    @Operation(summary = "Mudar método de pagamento")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "201"),
+            @ApiResponse(description = "Método de pagamento inválido", responseCode = "400", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))}),
+            @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+    })
     @PutMapping("/{customerId}/paymentMethod")
-    ResponseEntity<Void> changePaymentMethod(@PathVariable UUID customerId, @RequestBody String paymentMethod){
+    ResponseEntity<Void> changePaymentMethod(@PathVariable UUID customerId, @RequestBody @Parameter(description = "Método de pagamento", examples = {@ExampleObject("PIX"), @ExampleObject("CREDIT_CARD"), @ExampleObject("DEBIT_CARD")}) String paymentMethod){
 
         this.paymentMethodService.change(customerId, paymentMethod);
 
@@ -158,6 +182,11 @@ public class CustomerController {
                 .build();
     }
 
+    @Operation(summary = "Buscar método de pagamento")
+    @ApiResponses(value = {
+            @ApiResponse(description = "Sucesso", responseCode = "200"),
+            @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
+    })
     @GetMapping("/{customerId}/paymentMethod")
     ResponseEntity<PaymentMethod> getPaymentMethod(@PathVariable UUID customerId){
 
