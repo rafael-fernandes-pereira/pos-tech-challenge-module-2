@@ -48,12 +48,12 @@ public class ParkingService {
     Double penaltyValue;
 
     @Value("${parking.hour.first}")
-    Double FirstHourValue;
+    Double firstHourValue;
 
     @Value("${parking.hour.rest}")
-    Double RestHourValue;
+    Double restHourValue;
 
-    public ParkingOpened register(ParkingType parkingType, UUID customerId, String car, Long duration){
+    public void register(ParkingType parkingType, UUID customerId, String car, Long duration){
 
         if (parkingType.equals(ParkingType.FIX) && (duration == null || duration <= 0))
             throw new ParkingMinimumDuration1HourException();
@@ -71,7 +71,7 @@ public class ParkingService {
 
             ParkingOpenedEntity saved = this.parkingOpenedRepository.insert(parkingOpenedEntity);
 
-            return ParkingOpened.fromOpenedParking(saved);
+            ParkingOpened.fromOpenedParking(saved);
 
         } catch (DuplicateKeyException exception){
             throw new ParkingDuplicateException();
@@ -98,7 +98,7 @@ public class ParkingService {
         long secondsPlus = 0L;
 
         Duration duration = Duration.between(parkingOpened.start(), end);
-        Duration expectedDuration = Duration.between(parkingOpened.start(), parkingOpened.expectedEndTime());
+        Duration expectedDuration = Duration.between(parkingOpened.start(), parkingOpened.expected_end_time());
 
         if (ParkingType.FIX.equals(parkingOpened.parking_type())){
 
@@ -140,9 +140,9 @@ public class ParkingService {
             long hourFinal = hours + hourPlus - 1L;
 
             value = new BigDecimal(hourFinal)
-                    .multiply(BigDecimal.valueOf(this.RestHourValue))
+                    .multiply(BigDecimal.valueOf(this.restHourValue))
                     .multiply(new BigDecimal("1.0"))
-                    .add(BigDecimal.valueOf(this.FirstHourValue));
+                    .add(BigDecimal.valueOf(this.firstHourValue));
 
             valueFinal = value;
         }

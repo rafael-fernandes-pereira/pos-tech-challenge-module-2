@@ -17,7 +17,7 @@ public record ParkingOpened(
         PaymentMethod payment_method,
         ParkingType parking_type,
         LocalDateTime start,
-        LocalDateTime expectedEndTime
+        LocalDateTime expected_end_time
 
 ) {
 
