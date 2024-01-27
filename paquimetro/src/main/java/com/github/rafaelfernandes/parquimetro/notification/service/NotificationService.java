@@ -70,8 +70,8 @@ public class NotificationService {
             mailSender.send(message);
 
         }
+        parkingSendReceiptRepository.deleteAll(mails);
 
-        parkingSendReceiptRepository.deleteAll();
 
     }
 

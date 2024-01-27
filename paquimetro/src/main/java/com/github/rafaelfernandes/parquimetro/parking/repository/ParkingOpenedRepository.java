@@ -13,7 +13,7 @@ public interface ParkingOpenedRepository extends MongoRepository<ParkingOpenedEn
 
     ParkingOpenedEntity findByCustomerIdAndCar(UUID customerId, String car);
 
-    @Query("{ 'start' : { $lte : ?0 }, 'parkingType' : ?1 }")
+    @Query("{ 'expectedEndTime' : { $lte : ?0 }, 'parkingType' : ?1 }")
     List<ParkingOpenedEntity> findByParkingOpened(LocalDateTime endTime, ParkingType parkingType);
 
 
