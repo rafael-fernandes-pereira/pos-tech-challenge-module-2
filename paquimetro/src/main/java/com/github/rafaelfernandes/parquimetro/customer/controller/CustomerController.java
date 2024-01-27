@@ -40,7 +40,7 @@ public class CustomerController {
 
     @Autowired private PaymentMethodService paymentMethodService;
 
-    @Operation(summary = "02 - Obter cliente")
+    @Operation(summary = "Obter cliente")
     @ApiResponses(value = {
             @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Customer.class))}),
             @ApiResponse(description = "Cliente não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
@@ -57,7 +57,7 @@ public class CustomerController {
 
     }
 
-    @Operation(summary = "01 - Cadastrar cliente")
+    @Operation(summary = "Cadastrar cliente")
     @ApiResponses(value = {
             @ApiResponse(description = "Sucesso", responseCode = "201", headers = {@Header(name = "/customer/customerId", description = "Location do customer criado")}),
             @ApiResponse(description = "Problemas de validação e/ou tentativa de registrar duplidade", responseCode = "400", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
@@ -80,7 +80,7 @@ public class CustomerController {
 
     }
 
-    @Operation(summary = "03 - Obter clientes", description = "03")
+    @Operation(summary = "Obter clientes", description = "03")
     @ApiResponses(value = {
             @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))})
     })

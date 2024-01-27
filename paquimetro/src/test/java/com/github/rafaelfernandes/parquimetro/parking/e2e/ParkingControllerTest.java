@@ -12,7 +12,7 @@ import com.github.rafaelfernandes.parquimetro.parking.enums.ParkingType;
 import com.github.rafaelfernandes.parquimetro.parking.repository.ParkingOpenedRepository;
 import com.github.rafaelfernandes.parquimetro.parking.service.ParkingService;
 import com.github.rafaelfernandes.parquimetro.util.CustomerCar;
-import com.github.rafaelfernandes.parquimetro.util.GenerateData;
+import com.github.rafaelfernandes.parquimetro.generate.data.controller.GenerateData;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;

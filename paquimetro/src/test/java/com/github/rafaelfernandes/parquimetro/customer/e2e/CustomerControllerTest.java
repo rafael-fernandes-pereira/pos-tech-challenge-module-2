@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.customer.e2e;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.customer.enums.PaymentMethod;
-import com.github.rafaelfernandes.parquimetro.util.GenerateData;
+import com.github.rafaelfernandes.parquimetro.generate.data.controller.GenerateData;
 import com.github.rafaelfernandes.parquimetro.customer.entity.CustomerEntity;
 import com.github.rafaelfernandes.parquimetro.customer.enums.State;
 import com.github.rafaelfernandes.parquimetro.customer.repository.CustomerRepository;

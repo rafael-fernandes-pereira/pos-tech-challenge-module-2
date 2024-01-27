@@ -1,7 +1,7 @@
 package com.github.rafaelfernandes.parquimetro.customer.unit;
 
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
-import com.github.rafaelfernandes.parquimetro.util.GenerateData;
+import com.github.rafaelfernandes.parquimetro.generate.data.controller.GenerateData;
 import com.github.rafaelfernandes.parquimetro.customer.entity.CustomerEntity;
 import org.junit.jupiter.api.Test;
 

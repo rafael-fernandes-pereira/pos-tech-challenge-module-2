@@ -3,7 +3,7 @@ package com.github.rafaelfernandes.parquimetro.customer.unit;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Contact;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Address;
-import com.github.rafaelfernandes.parquimetro.util.GenerateData;
+import com.github.rafaelfernandes.parquimetro.generate.data.controller.GenerateData;
 import com.github.rafaelfernandes.parquimetro.util.MongoContainers;
 import com.github.rafaelfernandes.parquimetro.customer.validation.ValidacaoRequest;
 import org.junit.jupiter.api.Test;

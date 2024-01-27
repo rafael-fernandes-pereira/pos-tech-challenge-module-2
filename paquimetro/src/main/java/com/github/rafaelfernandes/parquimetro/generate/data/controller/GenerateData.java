@@ -1,4 +1,4 @@
-package com.github.rafaelfernandes.parquimetro.util;
+package com.github.rafaelfernandes.parquimetro.generate.data.controller;
 
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Contact;
