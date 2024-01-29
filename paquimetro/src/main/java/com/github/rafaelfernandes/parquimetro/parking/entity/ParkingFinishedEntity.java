@@ -15,7 +15,7 @@ public record ParkingFinishedEntity(
         UUID customerId,
         String car,
         String name,
-        ContactEntity contact,
+        ContactFinishedEntity contact,
         PaymentMethod paymentMethod,
         ParkingType parkingType,
         Receipt receipt
@@ -26,7 +26,7 @@ public record ParkingFinishedEntity(
                         parkingOpened.customer_id(),
                         parkingOpened.car(),
                         parkingOpened.name(),
-                        new ContactEntity(
+                        new ContactFinishedEntity(
                                 parkingOpened.contact().email(),
                                 parkingOpened.contact().cellphone()
                         ),

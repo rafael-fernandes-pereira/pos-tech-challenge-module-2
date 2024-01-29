@@ -3,8 +3,18 @@ docker run -d --rm \
     -e MONGO_INITDB_ROOT_USERNAME=parquimetro \
     -e MONGO_INITDB_ROOT_PASSWORD=parquimetro \
     --name parking_db \
-    mongo:5
+    mongo:5.0
+
+docker build \
+	-t fakesmtp \
+	-f infrastructure/fakesmtp.Dockerfile \
+	.
+
+docker run --rm -d \
+	-p 8025:25 \
+	-v ~/tmp:/output \
+	--name fakesmtp \
+    fakesmtp
 
 ./mvnw clean install
 
-./mvnw spring-boot:run

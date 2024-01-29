@@ -1,13 +1,20 @@
-FROM ubuntu:latest
+FROM alpine:3.6
 
-ADD get_date.sh /root/get_date.sh
+RUN mkdir -p /opt/crontab
 
-RUN chmod 0644 /root/get_date.sh
+COPY ../crontab/notification_fix.sh /opt/crontab/notification_fix.sh
+COPY ../crontab/notification_hour.sh /opt/crontab/notification_hour.sh
+COPY ../crontab/notification_receipt.sh /opt/crontab/notification_receipt.sh
 
-RUN apt-get update
-RUN apt-get -y install cron
+RUN chmod +x /opt/crontab/*.sh
 
-RUN crontab -l | { cat; echo "* * * * * bash /root/get_date.sh"; } | crontab -
+RUN apk --update add \
+    curl \
+    && rm -rf /var/cache/apk/*
 
-# Run the command on container startup
-CMD cron
+
+RUN crontab -l | { cat; echo "*/1 * * * * /opt/crontab/notification_fix.sh"; } | crontab -
+RUN crontab -l | { cat; echo "*/1 * * * * /opt/crontab/notification_hour.sh"; } | crontab -
+RUN crontab -l | { cat; echo "*/1 * * * * /opt/crontab/notification_receipt.sh"; } | crontab -
+
+CMD ["crond", "-f", "-d", "8"]

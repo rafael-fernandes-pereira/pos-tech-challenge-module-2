@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  parking_db:
+    image: mongo:5.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: parquimetro
+      MONGO_INITDB_ROOT_PASSWORD: parquimetro
+    ports:
+      - "27017:27017"
+    network_mode: host
+
+  fake_smtp:
+    build:
+      dockerfile: infrastructure/fakesmtp.Dockerfile
+    ports:
+      - "8025:25"
+    network_mode: host
+    volumes:
+      - ~/tmp:/output
+
+  notification:
+    build:
+      dockerfile: infrastructure/notification.Dockerfile
+    network_mode: host
+
+
+  parking_client: &parking_client
+    build:
+      dockerfile: infrastructure/parking.Dockerfile
+    ports:
+      - "8080:8080"
+    network_mode: host
+    depends_on:
+      - parking_db
+      - fake_smtp
+      - notification
+    environment:
+      SPRING_DATA_MONGODB_URI: "mongodb://parquimetro:parquimetro@localhost:27017/admin"
+      SPRING_DATA_MONGODB_DATABASE: "parquimetro"
+
+
+  send_notification:
+    <<: *parking_client
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: "8081"
+

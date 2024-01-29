@@ -18,6 +18,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +80,7 @@ public class NotificationService {
 
         String templateName = "fix";
 
-        LocalDateTime endTime = LocalDateTime.now()
+        LocalDateTime endTime = LocalDateTime.now(ZoneId.of("UTC"))
                 .minusMinutes(45)
                 .withSecond(0)
                 .withNano(0);

@@ -39,7 +39,7 @@ public class GenerateData {
                 paymentMethod,
                 new Contact(
                         faker.internet().emailAddress(),
-                        faker.phoneNumber().phoneNumberNational().replaceAll("[(),\\-, ]", "")
+                        GenerateData.celular()
                 ),
                 placas()
         );
@@ -98,7 +98,7 @@ public class GenerateData {
     }
 
     public static String celular(){
-        return faker.phoneNumber().cellPhone().replaceAll("[(),\\-, ]", "");
+        return "35988772233";
     }
 
 
