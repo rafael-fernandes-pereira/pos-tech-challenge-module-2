@@ -84,7 +84,7 @@ public class ParkingController {
         this.parkingService.register(ParkingType.HOUR, customerId, car, 1L);
 
         URI location = uriComponentsBuilder
-                .path("parking/{requestId}/{car}/open")
+                .path("parking/{customerId}/{car}/open")
                 .buildAndExpand(customerId, car)
                 .toUri();
 
@@ -126,10 +126,10 @@ public class ParkingController {
             @ApiResponse(description = "Sucesso", responseCode = "200", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ParkingFinished.class))}),
             @ApiResponse(description = "Cliente ou carro não encontrado", responseCode = "404", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerError.class))})
     })
-    @GetMapping("/{requestId}/finish")
-    ResponseEntity<ParkingFinished> getParkingFinished(@PathVariable UUID requestId){
+    @GetMapping("/{parkingId}/finish")
+    ResponseEntity<ParkingFinished> getParkingFinished(@PathVariable UUID parkingId){
 
-        ParkingFinished parking = this.parkingService.getFinished(requestId);
+        ParkingFinished parking = this.parkingService.getFinished(parkingId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

@@ -3,6 +3,7 @@ package com.github.rafaelfernandes.parquimetro.parking.entity;
 import com.github.rafaelfernandes.parquimetro.customer.controller.request.Customer;
 import com.github.rafaelfernandes.parquimetro.customer.entity.ContactEntity;
 import com.github.rafaelfernandes.parquimetro.customer.enums.PaymentMethod;
+import com.github.rafaelfernandes.parquimetro.parking.controller.response.open.ParkingOpened;
 import com.github.rafaelfernandes.parquimetro.parking.enums.ParkingType;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -65,6 +66,23 @@ public record ParkingOpenedEntity(
                         parkingOpenedEntity.parkingType(),
                         parkingOpenedEntity.start(),
                         LocalDateTime.now().plusHours(1L)
+                );
+        }
+
+        public static ParkingOpenedEntity updateStartEnd(ParkingOpened parkingOpenedEntity, Long starMinutesMinus, Long expectedMinutesPlus){
+                return new ParkingOpenedEntity(
+                        parkingOpenedEntity.id(),
+                        parkingOpenedEntity.customer_id(),
+                        parkingOpenedEntity.car(),
+                        parkingOpenedEntity.name(),
+                        new ContactEntity(
+                                parkingOpenedEntity.contact().email(),
+                                parkingOpenedEntity.contact().cellphone()
+                        ),
+                        parkingOpenedEntity.payment_method(),
+                        parkingOpenedEntity.parking_type(),
+                        LocalDateTime.now().minusMinutes(starMinutesMinus),
+                        LocalDateTime.now().minusMinutes(starMinutesMinus).plusMinutes(expectedMinutesPlus)
                 );
         }
 }

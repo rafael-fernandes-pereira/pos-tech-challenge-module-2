@@ -180,4 +180,17 @@ public class ParkingService {
 
     }
 
+    public void updateStartEnd(UUID customerId, String car, Long starMinusHours, Long expectedHoursPlus){
+
+
+        ParkingOpened parkingOpened = this.getOpenedByCustomerIdAndCar(customerId, car);
+
+
+
+        ParkingOpenedEntity updateParking = ParkingOpenedEntity.updateStartEnd(parkingOpened, starMinusHours, expectedHoursPlus);
+
+        this.parkingOpenedRepository.save(updateParking);
+
+    }
+
 }
